@@ -308,6 +308,23 @@ def scan(
     raise typer.Exit(2)
 
 
+@app.command()
+def gui() -> None:
+    """Launch the PurpleMCP desktop app (needs the optional 'gui' extra)."""
+    try:
+        from .gui import run
+        code = run()
+    except ModuleNotFoundError as exc:
+        if "PySide6" in str(exc):
+            err.print(
+                "[red]The desktop GUI needs PySide6.[/red] Install it with:\n"
+                "  [bold]pip install 'purplemcp[gui]'[/bold]"
+            )
+            raise typer.Exit(1)
+        raise
+    raise typer.Exit(code)
+
+
 def main() -> None:
     app()
 

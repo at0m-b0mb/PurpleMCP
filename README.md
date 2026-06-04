@@ -69,7 +69,7 @@ local models (you already have it if `ollama --version` works).
 # 1. Install PurpleMCP (editable, so edits take effect immediately)
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -e .
+pip install -e ".[gui]"     # include the desktop GUI; use `pip install -e .` for CLI-only
 
 # 2. Configure keys (only the providers you want; Ollama needs none)
 cp .env.example .env       # then edit .env
@@ -88,10 +88,46 @@ purplemcp ask "what is 19% of 4,200 plus the square root of 144?" \
 
 # 6. Interactive chat with tools from multiple servers
 purplemcp chat --provider ollama --server calculator --server notes
+
+# 7. ...or skip the flags entirely and drive it all from the desktop app
+purplemcp gui
 ```
 
 Want Claude/GPT instead of local? Put the key in `.env` and swap
 `--provider anthropic` (or `openai`, `gemini`, `openrouter`).
+
+---
+
+## 🖥️ Desktop GUI
+
+Prefer clicking to typing? `purplemcp gui` opens a native, dark **purple-team
+security console** (PySide6) over the exact same core the CLI uses — no separate
+server, no browser.
+
+![PurpleMCP dashboard](docs/images/gui/1_dashboard.png)
+
+It puts all of PurpleMCP behind five pages:
+
+| Page | What it does |
+| --- | --- |
+| **Dashboard** | Provider readiness, registered servers, and lab stats at a glance. |
+| **Tool Explorer** | Browse a server's tools, inspect each JSON schema, and call any tool through an auto-generated form — no model required. |
+| **Chat Playground** | Chat with any provider/model and watch the agent's **tool calls + results stream live** as inline cards. |
+| **Security Scanner** | Run the static + dynamic scanner with a severity chart, summary pills, and per-finding cards. |
+| **Attack / Defend Arena** | The signature demo: arm the lab, fire one payload at a **vulnerable server and its hardened twin side by side**, and watch it get exploited, then blocked. |
+
+The Attack/Defend arena, red vs blue:
+
+![Attack/Defend arena](docs/images/gui/5_arena.png)
+
+> The arena only launches intentionally-vulnerable servers after you explicitly
+> **arm the lab** in the UI — the same opt-in friction as the CLI lab flag. See
+> [docs/06-gui.md](docs/06-gui.md) for a full tour, and [ETHICS.md](ETHICS.md).
+
+```bash
+pip install -e ".[gui]"   # one-time: pull in PySide6
+purplemcp gui             # or:  python -m purplemcp.gui
+```
 
 ---
 
@@ -103,6 +139,7 @@ purplemcp/            CORE package (installable)
   host/               MCP client manager + the agent tool-calling loop
   installer/          wire MCP servers into Claude Desktop & other hosts
   guardrails/         the reusable hardening library (used by defense/)
+  gui/                the PySide6 desktop app (`purplemcp gui`)
   scanner.py          static + dynamic MCP security analyzer
   cli.py              the `purplemcp` command
 
@@ -110,7 +147,7 @@ servers/              CLEAN, safe-by-default example MCP servers
 attacks/   ⚠️         LAB-ONLY vulnerable servers + exploits (see ETHICS.md)
 defense/              hardened twins, the security playbook + checklist, scanner docs
 docs/                 deep dives: what-is-mcp, architecture, installing models,
-                      the attack catalog, and the defense playbook
+                      the attack catalog, the defense playbook, and the GUI tour
 tests/                pytest suite that proves the guardrails block the attacks
 ```
 

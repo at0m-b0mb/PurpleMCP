@@ -29,9 +29,11 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=9.0"]
+gui = ["pyside6>=6.7"]
 
 [project.scripts]
 purplemcp = "purplemcp.cli:main"
+purplemcp-gui = "purplemcp.gui:run"
 
 [tool.setuptools.packages.find]
 include = ["purplemcp*"]
