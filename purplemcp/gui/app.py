@@ -29,6 +29,7 @@ from .widgets.research import ResearchPage
 from .widgets.scanner import ScannerPage
 from .widgets.servers import ServersPage
 from .widgets.settings import SettingsPage
+from .widgets.shortcuts import SHORTCUTS, ShortcutsDialog
 from .widgets.sidebar import NAV_ITEMS, NavSidebar
 from .widgets.statusbar import StatusBar
 
@@ -101,6 +102,14 @@ class MainWindow(QMainWindow):
             sc = QShortcut(QKeySequence(f"Ctrl+{i}"), self)
             sc.activated.connect(lambda k=key: self._go_and_select(k))
 
+        # ⌘, → Settings · F1 / ⌘/ → shortcuts help
+        self._shortcuts_dialog: ShortcutsDialog | None = None
+        settings_sc = QShortcut(QKeySequence("Ctrl+,"), self)
+        settings_sc.activated.connect(lambda: self._go_and_select("settings"))
+        for seq in ("F1", "Ctrl+/"):
+            help_sc = QShortcut(QKeySequence(seq), self)
+            help_sc.activated.connect(self._open_shortcuts)
+
     def _go(self, key: str) -> None:
         if key not in self._pages:
             return
@@ -122,8 +131,13 @@ class MainWindow(QMainWindow):
             lambda: self._lab.set_armed(not self._lab.armed),
         ))
         commands.append(("Refresh dashboard", "Reload providers & servers", self._dashboard.refresh))
+        commands.append(("Keyboard shortcuts", "Show all key bindings", self._open_shortcuts))
         self._palette = CommandPalette(commands, self)
         self._palette.show_centered()
+
+    def _open_shortcuts(self) -> None:
+        self._shortcuts_dialog = ShortcutsDialog(SHORTCUTS, self)
+        self._shortcuts_dialog.show_centered()
 
     def closeEvent(self, event) -> None:  # noqa: N802 - Qt override
         self._chat.shutdown()
