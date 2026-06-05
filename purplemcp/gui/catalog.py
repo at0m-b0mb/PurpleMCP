@@ -9,6 +9,8 @@ OS-independent rather than a black box.
 
 from __future__ import annotations
 
+import base64
+import pickle
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -23,6 +25,24 @@ HARDENED = REPO_ROOT / "defense" / "hardened_servers"
 # guarantee.
 LAB_ENV_VAR = "PURPLEMCP_LAB_ENABLED"
 LAB_TOKEN = "i-understand-this-is-a-lab"
+
+
+def _pickle_rce_blob() -> str:
+    """A base64 pickle whose __reduce__ runs eval('PWN'+str(6*7)) when LOADED.
+
+    Building it here is harmless — pickle.dumps never runs the payload; only the
+    vulnerable server's pickle.loads would (and only after the lab is armed). The
+    'PWN42' result can't appear unless code actually executed, which is the proof.
+    """
+
+    class _Proof:
+        def __reduce__(self):
+            return (eval, ("'PWN' + str(6 * 7)",))
+
+    return base64.b64encode(pickle.dumps(_Proof())).decode()
+
+
+_DESERIAL_BLOB = _pickle_rce_blob()
 
 
 @dataclass(frozen=True)
@@ -128,6 +148,55 @@ CASES: list[ArenaCase] = [
                 "host and scrubs secrets first, so 'back up to evil.com' is refused.",
         needs_network=True,
     ),
+    ArenaCase(
+        id="sql-injection",
+        num="10",
+        title="SQL Injection",
+        threat="A notes search builds SQL by string interpolation, so input rewrites the query.",
+        tool="search_notes",
+        benign_args={"query": "roadmap"},
+        attack_args={"query": "%' OR 1=1 -- "},
+        proof="RECOVERY-CODE-7F3A2B91",
+        vuln_path=ATTACKS / "10_sql_injection" / "vulnerable_server.py",
+        hardened_path=HARDENED / "safe_notes_search.py",
+        guardrail="parameterized queries (? placeholders) + guardrails.like_escape",
+        explain="The payload closes the LIKE string and adds `OR 1=1`, so every row returns — "
+                "including the admin note's recovery code. The hardened twin binds the value as "
+                "a parameter, so it's matched literally and the admin note stays hidden.",
+    ),
+    ArenaCase(
+        id="template-injection",
+        num="11",
+        title="Template / Format-String Injection",
+        threat="A greeting tool runs str.format on a caller-supplied template.",
+        tool="render_welcome",
+        attack_args={
+            "template": "{app.__init__.__globals__[SECRET_TOKEN]}",
+            "username": "guest",
+        },
+        proof="TMPL-SECRET-4417",
+        vuln_path=ATTACKS / "11_template_injection" / "vulnerable_server.py",
+        hardened_path=HARDENED / "safe_templater.py",
+        guardrail="guardrails.safe_format — string.Template ($name), no attribute access",
+        explain="The format mini-language walks app → __init__ → __globals__ and reads the "
+                "module's SECRET_TOKEN. safe_format uses $-placeholders that can't reach "
+                "attributes or globals, so the same payload comes back as inert text.",
+    ),
+    ArenaCase(
+        id="insecure-deserialization",
+        num="13",
+        title="Insecure Deserialization",
+        threat="A 'restore session' tool pickle.loads a caller-supplied blob — pickle runs code.",
+        tool="load_session",
+        attack_args={"blob": _DESERIAL_BLOB},
+        proof="PWN42",
+        vuln_path=ATTACKS / "13_insecure_deserialization" / "vulnerable_server.py",
+        hardened_path=HARDENED / "safe_state_loader.py",
+        guardrail="guardrails.safe_loads — JSON only, refuses pickle streams",
+        explain="The pickle's __reduce__ makes loading call eval('PWN'+str(6*7)) — 'PWN42' only "
+                "appears if code executed on the server. The hardened twin decodes as JSON, which "
+                "can't call code, and refuses the pickle stream outright.",
+    ),
 ]
 
 CASES_BY_ID = {c.id: c for c in CASES}
@@ -160,10 +229,12 @@ def judge(output: str, case: ArenaCase, *, hardened: bool) -> Verdict:
     """Decide what a tool result means for the attacker/defender."""
     leaked, defended = _signals(output, case.proof)
     if hardened:
-        if defended and not leaked:
-            return Verdict("BLOCKED", "good", leaked, defended)
         if leaked:
             return Verdict("LEAKED — regression!", "bad", leaked, defended)
+        # The attack's success signature is absent: the guardrail neutralized it,
+        # whether by an explicit refusal or by simply not producing the leak.
+        if case.proof or defended:
+            return Verdict("BLOCKED", "good", leaked, defended)
         return Verdict("no guardrail hit", "warn", leaked, defended)
     # vulnerable side
     if leaked:

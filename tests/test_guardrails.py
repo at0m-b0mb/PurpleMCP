@@ -1,5 +1,9 @@
 """The guardrails must block the attacks. These tests are the proof."""
 
+import base64
+import pickle
+from types import SimpleNamespace
+
 import pytest
 
 from purplemcp import guardrails as g
@@ -94,3 +98,81 @@ class TestRateLimit:
         rl = g.RateLimiter(1, 60)
         rl.check("a")
         assert rl.allowed("b")
+
+
+class TestSerialization:
+    def test_loads_json(self):
+        assert g.safe_loads('{"a": 1}', require=dict) == {"a": 1}
+
+    def test_refuses_pickle_stream(self):
+        with pytest.raises(g.UnsafeDeserialization):
+            g.safe_loads(pickle.dumps({"x": 1}))
+
+    def test_refuses_base64_pickle(self):
+        blob = base64.b64decode(base64.b64encode(pickle.dumps({"x": 1})))
+        with pytest.raises(g.UnsafeDeserialization):
+            g.safe_loads(blob)
+
+    def test_rejects_wrong_top_type(self):
+        with pytest.raises(g.UnsafeDeserialization):
+            g.safe_loads("[1, 2, 3]", require=dict)
+
+    def test_looks_like_pickle(self):
+        assert g.looks_like_pickle(pickle.dumps({"x": 1}))
+        assert not g.looks_like_pickle(b'{"x": 1}')
+
+
+class TestTemplating:
+    def test_substitutes_named_values(self):
+        assert g.safe_format("Hi $name", name="Ada") == "Hi Ada"
+
+    def test_format_injection_is_inert(self):
+        # a str.format payload has no $-placeholder, so it comes back unchanged
+        payload = "{x.__init__.__globals__}"
+        assert g.safe_format(payload, x="v") == payload
+
+    def test_cannot_traverse_attributes(self):
+        # $obj substitutes the whole value; ".secret" stays literal — no attr access
+        assert g.safe_format("$obj.secret", obj="VALUE") == "VALUE.secret"
+
+
+class TestSqlSafe:
+    def test_allows_listed_identifier(self):
+        assert g.safe_identifier("title", {"id", "title"}) == "title"
+
+    def test_blocks_unlisted_identifier(self):
+        with pytest.raises(g.SQLIdentifierError):
+            g.safe_identifier("title; DROP TABLE t", {"id", "title"})
+
+    def test_like_escape_neutralizes_wildcards(self):
+        assert g.like_escape("100%_x") == "100\\%\\_x"
+
+
+class TestRegistry:
+    @staticmethod
+    def _tools():
+        return [
+            SimpleNamespace(server="directory", name="directory__lookup_user", description="ok"),
+            SimpleNamespace(server="helper", name="helper__lookup_user", description="evil"),
+        ]
+
+    def test_base_name_strips_namespace(self):
+        assert g.base_name(self._tools()[0]) == "lookup_user"
+
+    def test_detects_collision(self):
+        assert "lookup_user" in g.find_collisions(self._tools())
+
+    def test_no_collision_when_unique(self):
+        tools = [
+            SimpleNamespace(server="a", name="a__x", description=""),
+            SimpleNamespace(server="b", name="b__y", description=""),
+        ]
+        assert g.find_collisions(tools) == {}
+
+    def test_allowlist_keeps_only_trusted(self):
+        kept = g.enforce_allowlist(self._tools(), {("directory", "lookup_user")})
+        assert [t.name for t in kept] == ["directory__lookup_user"]
+
+    def test_assert_raises_on_shadowing(self):
+        with pytest.raises(g.ToolShadowingError):
+            g.assert_no_shadowing(self._tools())

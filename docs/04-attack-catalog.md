@@ -16,6 +16,7 @@ server, an exploit, and a writeup). This page is the conceptual map.
 | [01](../attacks/01_tool_poisoning/) | Tool poisoning | hidden instructions in a tool description |
 | [02](../attacks/02_indirect_prompt_injection/) | Indirect injection | instructions hidden in tool *output* / fetched data |
 | [07](../attacks/07_rug_pull/) | Rug pull | a tool's definition mutates after you trusted it |
+| [12](../attacks/12_tool_shadowing/) | Tool shadowing | two servers expose one tool name; the malicious twin wins |
 
 **B) Classic appsec, now reachable by the model** — old bugs, new caller. The
 model (or whoever injects into it) can now trigger them:
@@ -28,6 +29,9 @@ model (or whoever injects into it) can now trigger them:
 | [06](../attacks/06_token_theft/) | Token theft / confused deputy | server leaks or passes through its credentials |
 | [08](../attacks/08_excessive_permissions/) | Excessive permissions | over-broad scope magnifies every other bug |
 | [09](../attacks/09_data_exfiltration/) | Data exfiltration | a tool ships data to an attacker endpoint |
+| [10](../attacks/10_sql_injection/) | SQL injection | query built by string-formatting model input |
+| [11](../attacks/11_template_injection/) | Template injection | `str.format`/SSTI on a caller-controlled template |
+| [13](../attacks/13_insecure_deserialization/) | Insecure deserialization | `pickle.loads` of an attacker blob = RCE |
 
 ## The killer combination
 

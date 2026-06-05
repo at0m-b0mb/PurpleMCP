@@ -21,7 +21,17 @@ from .exec import run as safe_run
 from .net import SSRFError, assert_url_allowed, safe_get
 from .paths import PathTraversalError, safe_resolve
 from .ratelimit import RateLimiter, RateLimitExceeded
+from .registry import (
+    ToolShadowingError,
+    assert_no_shadowing,
+    base_name,
+    enforce_allowlist,
+    find_collisions,
+)
 from .secrets import find_secrets, scrub
+from .serialization import UnsafeDeserialization, looks_like_pickle, safe_loads
+from .sqlsafe import SQLIdentifierError, like_escape, safe_identifier
+from .templating import TemplateInjectionError, safe_format
 
 __all__ = [
     # paths
@@ -52,4 +62,21 @@ __all__ = [
     # ratelimit
     "RateLimiter",
     "RateLimitExceeded",
+    # serialization
+    "safe_loads",
+    "looks_like_pickle",
+    "UnsafeDeserialization",
+    # templating
+    "safe_format",
+    "TemplateInjectionError",
+    # sqlsafe
+    "safe_identifier",
+    "like_escape",
+    "SQLIdentifierError",
+    # registry (tool shadowing)
+    "find_collisions",
+    "enforce_allowlist",
+    "assert_no_shadowing",
+    "base_name",
+    "ToolShadowingError",
 ]

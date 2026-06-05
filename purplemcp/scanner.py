@@ -54,14 +54,32 @@ def _dotted(node: ast.expr) -> str:
     return ""
 
 
+def _is_built_string(node: ast.expr) -> bool:
+    """True if ``node`` is a string assembled at runtime (f-string / + / .format)."""
+    return (
+        isinstance(node, ast.JoinedStr)  # f-string
+        or (isinstance(node, ast.BinOp) and isinstance(node.op, ast.Add))  # "a" + x
+        or (isinstance(node, ast.Call) and _dotted(node.func).split(".")[-1] == "format")
+    )
+
+
 class _StaticVisitor(ast.NodeVisitor):
     def __init__(self, filename: str) -> None:
         self.filename = filename
         self.findings: list[Finding] = []
+        # names bound to a runtime-built string, so `sql = f"…"; execute(sql)` is caught
+        self.built_strings: set[str] = set()
 
     def _add(self, severity: str, rule: str, node: ast.AST, message: str) -> None:
         line = getattr(node, "lineno", "?")
         self.findings.append(Finding(severity, rule, f"{self.filename}:{line}", message))
+
+    def visit_Assign(self, node: ast.Assign) -> None:
+        if _is_built_string(node.value):
+            for target in node.targets:
+                if isinstance(target, ast.Name):
+                    self.built_strings.add(target.id)
+        self.generic_visit(node)
 
     def visit_Call(self, node: ast.Call) -> None:
         name = _dotted(node.func)
@@ -110,6 +128,17 @@ class _StaticVisitor(ast.NodeVisitor):
                 self._add("LOW", "path-traversal", node,
                           "open() on a computed path — confine with "
                           "guardrails.paths.safe_resolve")
+
+        # sql injection: execute() on a string built at runtime
+        if tail in {"execute", "executemany", "executescript"} and node.args:
+            first = node.args[0]
+            risky = _is_built_string(first) or (
+                isinstance(first, ast.Name) and first.id in self.built_strings
+            )
+            if risky:
+                self._add("HIGH", "sql-injection", node,
+                          "SQL built from a non-constant string — use parameterized "
+                          "queries (? placeholders), see guardrails.sqlsafe")
 
         self.generic_visit(node)
 

@@ -172,7 +172,7 @@ See [docs/03-installing-models.md](docs/03-installing-models.md).
 
 ## 🔴 Pillar 2 — Attack *(lab only)*
 
-Nine self-contained modules, each a **vulnerable server + an exploit + a writeup**:
+Thirteen self-contained modules, each a **vulnerable server + an exploit + a writeup**:
 
 | # | Attack | What the attacker achieves |
 | --- | --- | --- |
@@ -185,6 +185,10 @@ Nine self-contained modules, each a **vulnerable server + an exploit + a writeup
 | 07 | **Rug pull** | A tool changes its behavior *after* you approved it |
 | 08 | **Excessive permissions** | Over-broad scopes turn a small bug into a big breach |
 | 09 | **Data exfiltration** | Sensitive data is smuggled out through tool arguments |
+| 10 | **SQL injection** | A search tool builds SQL from input and dumps hidden rows |
+| 11 | **Template / format-string injection** | `str.format` on a caller's template reaches secrets/globals |
+| 12 | **Tool shadowing** | A 2nd server registers the same tool name and intercepts calls |
+| 13 | **Insecure deserialization** | A tool `pickle.loads` an attacker blob → code execution |
 
 Full catalog with mechanics: [docs/04-attack-catalog.md](docs/04-attack-catalog.md).
 Each lives in [`attacks/NN_*/`](attacks/) and is gated by the safety switch.
@@ -203,6 +207,10 @@ the reusable primitives in [`purplemcp/guardrails/`](purplemcp/guardrails/):
 | Credential leak | `guardrails.secrets.scrub()` — strip secrets from outputs |
 | Over-trust | `guardrails.approval` — human-in-the-loop for dangerous tools |
 | Abuse / runaway | `guardrails.ratelimit` — per-tool rate limiting |
+| SQL injection | `guardrails.sqlsafe` — parameterized queries + identifier/LIKE escaping |
+| Template / SSTI | `guardrails.templating.safe_format()` — `$name` only, no attribute access |
+| Tool shadowing | `guardrails.registry` — detect name collisions, allowlist `(server, tool)` |
+| Insecure deserialization | `guardrails.serialization.safe_loads()` — JSON only, refuses pickle |
 
 And a scanner that flags risky MCP servers before you ever run them:
 

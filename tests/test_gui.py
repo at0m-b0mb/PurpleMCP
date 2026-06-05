@@ -41,6 +41,20 @@ def test_judge_command_injection_proof_not_a_false_positive():
     assert judge(executed, case, hardened=False).kind == "bad"
 
 
+def test_new_attack_cases_present():
+    for cid in ("sql-injection", "template-injection", "insecure-deserialization"):
+        assert cid in CASES_BY_ID
+
+
+def test_judge_blocks_when_proof_absent_without_refusal():
+    # The SQLi hardened twin just returns fewer rows (no "refused" phrase); an
+    # absent attack-proof signature must still read as BLOCKED on the safe side.
+    case = CASES_BY_ID["sql-injection"]
+    assert judge("(no matches)", case, hardened=True).kind == "good"
+    leaked = "#3  ADMIN ONLY: RECOVERY-CODE-7F3A2B91 (do not share)"
+    assert judge(leaked, case, hardened=False).kind == "bad"
+
+
 def test_gui_constructs_headless():
     pytest.importorskip("PySide6")
     os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")

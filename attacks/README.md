@@ -50,6 +50,10 @@ flag it, so you see the mechanism without needing a model.
 | [07](07_rug_pull/) | Rug pull (definition mutation) | tool changing after trust | [`ToolPinner`](../purplemcp/guardrails/descriptions.py) |
 | [08](08_excessive_permissions/) | Excessive permissions | over-broad scope | least privilege + scoping |
 | [09](09_data_exfiltration/) | Data exfiltration | tool sends data out | allowlist + [`approval`](../purplemcp/guardrails/approval.py) + [`scrub`](../purplemcp/guardrails/secrets.py) |
+| [10](10_sql_injection/) | SQL injection | query built from strings | parameterized queries + [`guardrails.sqlsafe`](../purplemcp/guardrails/sqlsafe.py) |
+| [11](11_template_injection/) | Template / format-string injection | `.format` on caller input | [`guardrails.templating`](../purplemcp/guardrails/templating.py) |
+| [12](12_tool_shadowing/) | Tool shadowing / name collision | two servers, one tool name | [`guardrails.registry`](../purplemcp/guardrails/registry.py) |
+| [13](13_insecure_deserialization/) | Insecure deserialization | `pickle.loads` of input | [`guardrails.serialization`](../purplemcp/guardrails/serialization.py) |
 
 ## The point: red → blue
 

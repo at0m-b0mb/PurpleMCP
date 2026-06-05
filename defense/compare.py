@@ -19,8 +19,21 @@ from _lab.safety import require_lab  # noqa: E402
 
 require_lab("defense comparison")
 
+import base64  # noqa: E402
+import pickle  # noqa: E402
+
 from purplemcp.config import ServerSpec  # noqa: E402
 from purplemcp.host import MCPHost  # noqa: E402
+
+
+class _PickleRCEProof:
+    """Unpickling runs eval('PWN'+str(6*7)); harmless, but proves code executed."""
+
+    def __reduce__(self):
+        return (eval, ("'PWN' + str(6 * 7)",))
+
+
+_PICKLE_BLOB = base64.b64encode(pickle.dumps(_PickleRCEProof())).decode()
 
 CASES = [
     (
@@ -36,6 +49,27 @@ CASES = [
         {"path": "/etc/hosts"},
         REPO / "attacks/04_path_traversal/vulnerable_server.py",
         REPO / "defense/hardened_servers/safe_docreader.py",
+    ),
+    (
+        "sql injection",
+        "search_notes",
+        {"query": "%' OR 1=1 -- "},
+        REPO / "attacks/10_sql_injection/vulnerable_server.py",
+        REPO / "defense/hardened_servers/safe_notes_search.py",
+    ),
+    (
+        "template injection",
+        "render_welcome",
+        {"template": "{app.__init__.__globals__[SECRET_TOKEN]}", "username": "guest"},
+        REPO / "attacks/11_template_injection/vulnerable_server.py",
+        REPO / "defense/hardened_servers/safe_templater.py",
+    ),
+    (
+        "insecure deserialization",
+        "load_session",
+        {"blob": _PICKLE_BLOB},
+        REPO / "attacks/13_insecure_deserialization/vulnerable_server.py",
+        REPO / "defense/hardened_servers/safe_state_loader.py",
     ),
 ]
 
