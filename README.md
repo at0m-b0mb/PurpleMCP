@@ -330,6 +330,14 @@ purplemcp scan attacks --format sarif -o purplemcp.sarif
 
 ---
 
+## Contributing & security
+
+- **Contributing** — the dev setup and the exact recipe for adding a new
+  attack/defense module (so it appears across the CLI, GUI, taxonomy, and
+  benchmark) are in [CONTRIBUTING.md](CONTRIBUTING.md).
+- **Security policy** — the `attacks/` code is intentionally vulnerable *by design*;
+  to report a real issue in the framework itself, see [SECURITY.md](SECURITY.md).
+
 ## License & disclaimer
 
 MIT — see [LICENSE](LICENSE). This project includes intentionally vulnerable

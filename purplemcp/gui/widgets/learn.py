@@ -28,6 +28,8 @@ DOCS = [
     ("Threat taxonomy", REPO_ROOT / "docs" / "TAXONOMY.md"),
     ("Security report", REPO_ROOT / "docs" / "SECURITY-REPORT.md"),
     ("Ethics", REPO_ROOT / "ETHICS.md"),
+    ("Contributing", REPO_ROOT / "CONTRIBUTING.md"),
+    ("Security policy", REPO_ROOT / "SECURITY.md"),
 ]
 
 _LIST_QSS = f"""
