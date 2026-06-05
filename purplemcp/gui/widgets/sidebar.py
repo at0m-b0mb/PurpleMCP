@@ -143,7 +143,7 @@ class NavSidebar(QWidget):
         foot.addStretch(1)
         layout.addLayout(foot)
 
-        ver = QLabel("v0.4 · purple-team")
+        ver = QLabel("v0.5 · purple-team")
         ver.setObjectName("Faint")
         ver.setStyleSheet(f"color: {PALETTE['text_faint']}; font-size: 10px;")
         layout.addWidget(ver)

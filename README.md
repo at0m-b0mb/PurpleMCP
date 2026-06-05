@@ -1,9 +1,28 @@
+<div align="center">
+
 # 🟣 PurpleMCP
 
-**Build it. Attack it. Defend it.** — a hands-on lab for the **Model Context Protocol (MCP)**.
+**Build it · Attack it · Defend it** — a purple-team lab for the **Model Context Protocol**
 
-PurpleMCP teaches you the full lifecycle of MCP, the protocol that lets AI models
-call real tools. It does three things, and the third is what makes it *purple*
+[![CI](https://github.com/at0m-b0mb/PurpleMCP/actions/workflows/ci.yml/badge.svg)](https://github.com/at0m-b0mb/PurpleMCP/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-a855f7?style=flat-square)](LICENSE)
+![Python](https://img.shields.io/badge/Python-3.11%2B-8b5cf6?style=flat-square&logo=python&logoColor=white)
+![Attack modules](https://img.shields.io/badge/attack%20modules-21-f43f5e?style=flat-square)
+![Guardrails](https://img.shields.io/badge/guardrails-13-3b82f6?style=flat-square)
+![OWASP LLM Top 10](https://img.shields.io/badge/OWASP%20LLM%20Top%2010-mapped-c084fc?style=flat-square)
+
+Connect any LLM — local **Ollama** or cloud **Claude / GPT / Gemini** — to MCP servers,
+break them with **21 real, runnable exploits**, then harden them with a **reusable
+guardrails library**. All from a polished desktop console *or* the CLI.
+
+<img src="docs/images/gui/1_dashboard.png" alt="PurpleMCP — desktop security console" width="840">
+
+</div>
+
+---
+
+PurpleMCP teaches the full lifecycle of MCP, the protocol that lets AI models call
+real tools. It does three things, and the third is what makes it *purple*
 (red team + blue team together):
 
 | Pillar | What it gives you |
@@ -104,8 +123,6 @@ Prefer clicking to typing? `purplemcp gui` opens a native, dark **purple-team
 security console** (PySide6) over the exact same core the CLI uses — no separate
 server, no browser.
 
-![PurpleMCP dashboard](docs/images/gui/1_dashboard.png)
-
 It organizes all of PurpleMCP into clear sections:
 
 | Section | Page | What it does |
@@ -125,9 +142,31 @@ Throughout, a **⌘K command palette** jumps to any page or action, **⌘1–9**
 pages, and a **status bar** shows lab state, live async activity, and the default
 model.
 
-The Defense Lab — the guardrail, plus red-vs-blue proof:
+### A look around
 
-![Defense Lab](docs/images/gui/6_defense.png)
+<table>
+<tr>
+<td width="50%"><img src="docs/images/gui/5_attacks.png" alt="Attack Lab"><br><b>🔴 Attack Lab</b><br>Run the real exploit for any of the 21 modules, streamed live.</td>
+<td width="50%"><img src="docs/images/gui/6_defense.png" alt="Defense Lab"><br><b>🔵 Defense Lab</b><br>The guardrail source + a red→blue verify: exploited, then blocked.</td>
+</tr>
+<tr>
+<td><img src="docs/images/gui/7_models.png" alt="AI Models"><br><b>AI Models</b><br>Pull/run Ollama models (live progress) and set + test cloud keys.</td>
+<td><img src="docs/images/gui/9_research.png" alt="Research"><br><b>Research</b><br>OWASP/CWE/ATLAS taxonomy + one-click benchmark & export.</td>
+</tr>
+<tr>
+<td><img src="docs/images/gui/4_scanner.png" alt="Security Scanner"><br><b>Security Scanner</b><br>Static + dynamic findings with a severity chart and cards.</td>
+<td><img src="docs/images/gui/8_servers.png" alt="MCP Servers"><br><b>MCP Servers</b><br>Registry, custom add, and a catalog of real published servers.</td>
+</tr>
+<tr>
+<td><img src="docs/images/gui/2_explorer.png" alt="Tool Explorer"><br><b>Tool Explorer</b><br>Inspect any tool's JSON schema and call it via an auto-form.</td>
+<td><img src="docs/images/gui/10_learn.png" alt="Learn"><br><b>Learn</b><br>The entire handbook, rendered in-app — no context switch.</td>
+</tr>
+</table>
+
+<div align="center">
+<img src="docs/images/gui/11_palette.png" alt="Command palette (⌘K)" width="520"><br>
+<em>⌘K command palette — jump to any page or action.</em>
+</div>
 
 > The Attack Lab and Defense Lab only launch intentionally-vulnerable servers
 > after you explicitly **arm the lab** in the UI — the same opt-in friction as the

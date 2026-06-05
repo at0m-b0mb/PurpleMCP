@@ -113,11 +113,19 @@ class _Activity(QObject):
 
     def inc(self) -> None:
         self._n += 1
-        self.changed.emit(self._n)
+        self._emit()
 
     def dec(self) -> None:
         self._n = max(0, self._n - 1)
-        self.changed.emit(self._n)
+        self._emit()
+
+    def _emit(self) -> None:
+        # Jobs finish on the loop thread; during app/test teardown the underlying
+        # C++ object may already be gone. Emitting then is harmless to skip.
+        try:
+            self.changed.emit(self._n)
+        except RuntimeError:
+            pass
 
 
 #: singleton activity tracker (connect ``ACTIVITY.changed`` from the GUI thread).
