@@ -391,6 +391,29 @@ def bench(
 
 
 @app.command()
+def taxonomy() -> None:
+    """Show the threat taxonomy: each module mapped to OWASP LLM / CWE / ATLAS."""
+    from .taxonomy import TAXONOMY, owasp_coverage
+
+    table = Table(title="PurpleMCP threat taxonomy")
+    table.add_column("#", style="dim")
+    table.add_column("threat", style="bold")
+    table.add_column("OWASP LLM (2025)")
+    table.add_column("CWE")
+    table.add_column("guardrail")
+    for e in TAXONOMY:
+        table.add_row(e.num, e.title, e.owasp_label, e.refs.cwe, e.meta.guardrail or "—")
+    console.print(table)
+
+    cov = owasp_coverage()
+    covered = sum(1 for ids in cov.values() if ids)
+    console.print(
+        f"[dim]OWASP LLM Top-10 coverage:[/dim] {covered}/10 categories · "
+        f"{len(TAXONOMY)} modules.  Full table: docs/TAXONOMY.md"
+    )
+
+
+@app.command()
 def doctor() -> None:
     """Check your setup: Python, LLM providers, Ollama, the GUI, and the lab."""
     from .environment import all_ok, gather, stats

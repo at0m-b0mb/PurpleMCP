@@ -295,6 +295,7 @@ PurpleMCP is built to be a reproducible research artifact, not just a demo:
 
 - **Threat taxonomy** — every module is mapped to **OWASP Top 10 for LLM Apps
   (2025)**, **CWE**, and **MITRE ATLAS** in [`purplemcp/taxonomy.py`](purplemcp/taxonomy.py).
+  Browse the full table in [docs/TAXONOMY.md](docs/TAXONOMY.md) or run `purplemcp taxonomy`.
 - **PurpleMCP-Bench** — `purplemcp bench` measures **guardrail effectiveness**
   (deterministic: attack vs vulnerable vs hardened twin) and, optionally,
   **model susceptibility** (`--provider`), writing JSON + Markdown to `results/`.

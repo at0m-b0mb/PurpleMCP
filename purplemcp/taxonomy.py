@@ -156,3 +156,17 @@ def as_rows() -> list[dict[str, str]]:
         }
         for e in TAXONOMY
     ]
+
+
+def as_markdown_table() -> str:
+    """The taxonomy as a GitHub-Markdown table (used by docs/TAXONOMY.md)."""
+    lines = [
+        "| # | Threat | Family | Sev | OWASP LLM (2025) | CWE | MITRE ATLAS | Guardrail |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- |",
+    ]
+    for r in as_rows():
+        lines.append(
+            f"| {r['num']} | {r['title']} | {r['family']} | {r['severity']} | "
+            f"{r['owasp_llm']} | {r['cwe']} | {r['atlas']} | `{r['guardrail']}` |"
+        )
+    return "\n".join(lines)
