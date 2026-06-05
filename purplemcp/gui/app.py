@@ -17,6 +17,7 @@ from PySide6.QtWidgets import (
 from .async_bridge import AsyncLoop
 from .state import LabState
 from .theme import stylesheet
+from .widgets.about import AboutDialog
 from .widgets.attacks import AttackLabPage
 from .widgets.chat import ChatPage
 from .widgets.dashboard import DashboardPage
@@ -132,12 +133,17 @@ class MainWindow(QMainWindow):
         ))
         commands.append(("Refresh dashboard", "Reload providers & servers", self._dashboard.refresh))
         commands.append(("Keyboard shortcuts", "Show all key bindings", self._open_shortcuts))
+        commands.append(("About PurpleMCP", "Version, links, and lab stats", self._open_about))
         self._palette = CommandPalette(commands, self)
         self._palette.show_centered()
 
     def _open_shortcuts(self) -> None:
         self._shortcuts_dialog = ShortcutsDialog(SHORTCUTS, self)
         self._shortcuts_dialog.show_centered()
+
+    def _open_about(self) -> None:
+        self._about_dialog = AboutDialog(self)
+        self._about_dialog.show_centered()
 
     def closeEvent(self, event) -> None:  # noqa: N802 - Qt override
         self._chat.shutdown()
