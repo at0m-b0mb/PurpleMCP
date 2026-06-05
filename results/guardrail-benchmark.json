@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-06-05T15:09:08+00:00",
-  "tool_version": "0.4.0",
+  "generated_at": "2026-06-05T15:54:12+00:00",
+  "tool_version": "0.5.0",
   "environment": {
     "python": "3.13.12",
     "platform": "macOS-26.6-arm64-arm-64bit-Mach-O"
@@ -23,7 +23,7 @@
       "blocked_hardened": true,
       "vulnerable_verdict": "EXPLOITED \u2014 data leaked",
       "hardened_verdict": "BLOCKED",
-      "vulnerable_excerpt": "PING 127.0.0.1 (127.0.0.1): 56 data bytes 64 bytes from 127.0.0.1: icmp_seq=0 ttl=64 time=0.055 ms --- 127.0.0.1 ping statistics --- 1 packets transmitted, 1 packets received, 0.0% packet loss round-\u2026",
+      "vulnerable_excerpt": "PING 127.0.0.1 (127.0.0.1): 56 data bytes 64 bytes from 127.0.0.1: icmp_seq=0 ttl=64 time=0.069 ms --- 127.0.0.1 ping statistics --- 1 packets transmitted, 1 packets received, 0.0% packet loss round-\u2026",
       "hardened_excerpt": "[exit 68] ping: cannot resolve 127.0.0.1; echo PWNED-$((6*7)): Unknown host"
     },
     {

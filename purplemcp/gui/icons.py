@@ -50,6 +50,9 @@ _ICONS: dict[str, str] = {
     "chart":     '<path d="M3 21h18"/><rect x="5" y="11" width="3.2" height="7" rx="1"/>'
                  '<rect x="10.4" y="6" width="3.2" height="12" rx="1"/>'
                  '<rect x="15.8" y="9" width="3.2" height="9" rx="1"/>',
+    "book":      '<path d="M6 4h12a1 1 0 0 1 1 1v15H7a2 2 0 0 0-2 2V6a2 2 0 0 1 2-2z" '
+                 'stroke-linejoin="round"/><path d="M9 4v16"/>',
+    "command":   '<path d="M9 6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3z"/>',
 }
 
 

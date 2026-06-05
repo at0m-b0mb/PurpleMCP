@@ -20,6 +20,7 @@ from ..theme import PALETTE
 NAV_GROUPS = [
     ("OVERVIEW", [
         ("dashboard", "Dashboard", "dashboard"),
+        ("learn", "Learn", "book"),
     ]),
     ("CONNECT", [
         ("models", "AI Models", "cpu"),

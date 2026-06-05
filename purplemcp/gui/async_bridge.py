@@ -98,6 +98,32 @@ class Job(QObject):
         self._future: Optional[Future] = None
 
 
+class _Activity(QObject):
+    """App-wide counter of in-flight jobs, so the status bar can show 'working…'."""
+
+    changed = Signal(int)
+
+    def __init__(self) -> None:
+        super().__init__()
+        self._n = 0
+
+    @property
+    def count(self) -> int:
+        return self._n
+
+    def inc(self) -> None:
+        self._n += 1
+        self.changed.emit(self._n)
+
+    def dec(self) -> None:
+        self._n = max(0, self._n - 1)
+        self.changed.emit(self._n)
+
+
+#: singleton activity tracker (connect ``ACTIVITY.changed`` from the GUI thread).
+ACTIVITY = _Activity()
+
+
 def run_job(
     loop: AsyncLoop,
     coro_or_factory: Awaitable | Callable[[Job], Awaitable],
@@ -113,12 +139,15 @@ def run_job(
     coro = coro_or_factory(job) if callable(coro_or_factory) else coro_or_factory
 
     async def _runner() -> None:
+        ACTIVITY.inc()
         try:
             result = await coro
         except Exception as exc:  # noqa: BLE001 - reported to the UI
             job.failed.emit(format_error(exc))
         else:
             job.succeeded.emit(result)
+        finally:
+            ACTIVITY.dec()
 
     job._future = loop.submit(_runner())
     return job

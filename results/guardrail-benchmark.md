@@ -1,7 +1,7 @@
 # PurpleMCP-Bench — guardrail effectiveness
 
-- generated: `2026-06-05T15:09:08+00:00`
-- purplemcp: `0.4.0` · python `3.13.12` · macOS-26.6-arm64-arm-64bit-Mach-O
+- generated: `2026-06-05T15:54:12+00:00`
+- purplemcp: `0.5.0` · python `3.13.12` · macOS-26.6-arm64-arm-64bit-Mach-O
 - **guardrail effectiveness: 15/15 (100.0%)** — exploitable on the vulnerable server, blocked on the twin
 
 | # | Attack | OWASP-LLM | CWE | Vulnerable | Hardened | Fixed |

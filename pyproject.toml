@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "purplemcp"
-version = "0.4.0"
+version = "0.5.0"
 description = "PurpleMCP — a purple-team lab for building, attacking, and defending Model Context Protocol (MCP) servers with local + cloud LLMs."
 readme = "README.md"
 requires-python = ">=3.11"

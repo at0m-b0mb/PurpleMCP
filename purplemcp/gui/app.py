@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import sys
 
-from PySide6.QtGui import QFontDatabase
+from PySide6.QtGui import QFontDatabase, QKeySequence, QShortcut
 from PySide6.QtWidgets import (
     QApplication,
     QHBoxLayout,
@@ -22,11 +22,14 @@ from .widgets.chat import ChatPage
 from .widgets.dashboard import DashboardPage
 from .widgets.defense import DefenseLabPage
 from .widgets.explorer import ToolExplorerPage
+from .widgets.learn import LearnPage
 from .widgets.models import ModelsPage
+from .widgets.palette import CommandPalette
 from .widgets.research import ResearchPage
 from .widgets.scanner import ScannerPage
 from .widgets.servers import ServersPage
 from .widgets.sidebar import NAV_ITEMS, NavSidebar
+from .widgets.statusbar import StatusBar
 
 
 class MainWindow(QMainWindow):
@@ -51,8 +54,10 @@ class MainWindow(QMainWindow):
         content.setObjectName("ContentArea")
         cl = QVBoxLayout(content)
         cl.setContentsMargins(0, 0, 0, 0)
+        cl.setSpacing(0)
         self._stack = QStackedWidget()
         cl.addWidget(self._stack)
+        self._content_layout = cl
         layout.addWidget(content, 1)
         self.setCentralWidget(root)
 
@@ -65,6 +70,7 @@ class MainWindow(QMainWindow):
         self._chat = ChatPage(loop)
         self._pages = {
             "dashboard": self._dashboard,
+            "learn": LearnPage(),
             "models": ModelsPage(loop),
             "servers": ServersPage(loop),
             "explorer": ToolExplorerPage(loop),
@@ -81,12 +87,40 @@ class MainWindow(QMainWindow):
         self._sidebar.select("dashboard")
         self._go("dashboard")
 
+        # bottom status bar (lab state · async activity · provider · version)
+        self._content_layout.addWidget(StatusBar(self._lab))
+
+        # keyboard shortcuts: ⌘K command palette, ⌘1–9 page navigation
+        self._palette: CommandPalette | None = None
+        palette_sc = QShortcut(QKeySequence("Ctrl+K"), self)
+        palette_sc.activated.connect(self._open_palette)
+        for i, key in enumerate(self._keys[:9], start=1):
+            sc = QShortcut(QKeySequence(f"Ctrl+{i}"), self)
+            sc.activated.connect(lambda k=key: self._go_and_select(k))
+
     def _go(self, key: str) -> None:
         if key not in self._pages:
             return
         self._stack.setCurrentWidget(self._pages[key])
         if key == "dashboard":
             self._dashboard.refresh()
+
+    def _go_and_select(self, key: str) -> None:
+        self._sidebar.select(key)
+        self._go(key)
+
+    def _open_palette(self) -> None:
+        commands = [
+            (f"Go to {label}", "Page", lambda k=key: self._go_and_select(k))
+            for key, label, _icon in NAV_ITEMS
+        ]
+        commands.append((
+            "Toggle lab arm", "Enable/disable the intentionally-vulnerable lab",
+            lambda: self._lab.set_armed(not self._lab.armed),
+        ))
+        commands.append(("Refresh dashboard", "Reload providers & servers", self._dashboard.refresh))
+        self._palette = CommandPalette(commands, self)
+        self._palette.show_centered()
 
     def closeEvent(self, event) -> None:  # noqa: N802 - Qt override
         self._chat.shutdown()

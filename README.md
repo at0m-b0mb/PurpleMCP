@@ -111,6 +111,7 @@ It organizes all of PurpleMCP into clear sections:
 | Section | Page | What it does |
 | --- | --- | --- |
 | Overview | **Dashboard** | Provider readiness, registered servers, and lab stats at a glance. |
+| Overview | **Learn** | The full handbook — README + every doc — rendered in-app, no context-switch. |
 | Connect | **AI Models** | Install/run local Ollama models (list, **pull with live progress**, test, delete) and set/test cloud API keys (saved to `.env`). |
 | Connect | **MCP Servers** | View the registry, **add your own servers**, one-click add from a **catalog of real published servers**, and install into Claude Desktop. |
 | Connect | **Tool Explorer** | Browse a server's tools, inspect each JSON schema, and call any tool through an auto-generated form — no model required. |
@@ -118,6 +119,11 @@ It organizes all of PurpleMCP into clear sections:
 | Red team | **Attack Lab** | Browse all 21 attacks by family and **run the real exploit** for each, streaming its output live (lab-gated). |
 | Blue team | **Defense Lab** | For each attack: the **guardrail source code** (syntax-highlighted), how the fix works, and a **Verify** that replays the payload at the vulnerable server and its hardened twin — exploited, then blocked. |
 | Blue team | **Security Scanner** | Run the static + dynamic scanner with a severity chart, summary pills, and per-finding cards. |
+| Research | **Research** | Threat taxonomy (OWASP/CWE/ATLAS) + one-click benchmark with the defense matrix and JSON/MD export. |
+
+Throughout, a **⌘K command palette** jumps to any page or action, **⌘1–9** switch
+pages, and a **status bar** shows lab state, live async activity, and the default
+model.
 
 The Defense Lab — the guardrail, plus red-vs-blue proof:
 

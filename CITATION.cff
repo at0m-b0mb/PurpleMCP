@@ -16,7 +16,7 @@ authors:
 repository-code: "https://github.com/at0m-b0mb/PurpleMCP"
 url: "https://github.com/at0m-b0mb/PurpleMCP"
 license: MIT
-version: "0.4.0"
+version: "0.5.0"
 date-released: "2026-06-05"
 keywords:
   - model context protocol
