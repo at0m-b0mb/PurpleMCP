@@ -71,6 +71,34 @@ CASES = [
         REPO / "attacks/13_insecure_deserialization/vulnerable_server.py",
         REPO / "defense/hardened_servers/safe_state_loader.py",
     ),
+    (
+        "broken access control",
+        "get_record",
+        {"record_id": 2},
+        REPO / "attacks/14_broken_access_control/vulnerable_server.py",
+        REPO / "defense/hardened_servers/safe_records.py",
+    ),
+    (
+        "unrestricted file write",
+        "save_note",
+        {"path": "../15_ESCAPED_PROOF.txt", "content": "PWNED-WRITE-ESCAPE"},
+        REPO / "attacks/15_unrestricted_file_write/vulnerable_server.py",
+        REPO / "defense/hardened_servers/safe_writer.py",
+    ),
+    (
+        "weak randomness",
+        "issue_reset_token",
+        {"user": "victim@corp.example"},
+        REPO / "attacks/16_weak_randomness/vulnerable_server.py",
+        REPO / "defense/hardened_servers/safe_token_issuer.py",
+    ),
+    (
+        "output / log injection",
+        "record_event",
+        {"message": "ok\n[SECURITY] AUTH_BYPASS_GRANTED\x1b[2J"},
+        REPO / "attacks/17_output_injection/vulnerable_server.py",
+        REPO / "defense/hardened_servers/safe_logger.py",
+    ),
 ]
 
 

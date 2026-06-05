@@ -16,14 +16,28 @@ from PySide6.QtWidgets import (
 from ..icons import icon, pixmap
 from ..theme import PALETTE
 
-# (page key, label, icon name)
-NAV_ITEMS = [
-    ("dashboard", "Dashboard", "dashboard"),
-    ("explorer", "Tool Explorer", "tools"),
-    ("chat", "Chat Playground", "chat"),
-    ("scanner", "Security Scanner", "scanner"),
-    ("arena", "Attack / Defend", "arena"),
+# Grouped navigation: (section label, [(page key, label, icon name), ...]).
+NAV_GROUPS = [
+    ("OVERVIEW", [
+        ("dashboard", "Dashboard", "dashboard"),
+    ]),
+    ("CONNECT", [
+        ("models", "AI Models", "cpu"),
+        ("servers", "MCP Servers", "server"),
+        ("explorer", "Tool Explorer", "tools"),
+        ("chat", "Chat Playground", "chat"),
+    ]),
+    ("RED TEAM", [
+        ("attacks", "Attack Lab", "skull"),
+    ]),
+    ("BLUE TEAM", [
+        ("defense", "Defense Lab", "lock"),
+        ("scanner", "Security Scanner", "scanner"),
+    ]),
 ]
+
+# Flattened (page key, label, icon) in display order — used by the app to build pages.
+NAV_ITEMS = [item for _, items in NAV_GROUPS for item in items]
 
 
 class LogoMark(QWidget):
@@ -92,22 +106,24 @@ class NavSidebar(QWidget):
         brand.addLayout(tbox)
         brand.addStretch(1)
         layout.addLayout(brand)
-        layout.addSpacing(20)
-
-        nav_label = QLabel("WORKSPACE")
-        nav_label.setObjectName("NavGroupLabel")
-        layout.addWidget(nav_label)
-        layout.addSpacing(4)
+        layout.addSpacing(18)
 
         self._group = QButtonGroup(self)
         self._group.setExclusive(True)
         self._buttons: dict[str, NavButton] = {}
-        for key, label, icon_name in NAV_ITEMS:
-            btn = NavButton(label, icon_name)
-            btn.clicked.connect(lambda _=False, k=key: self.navigate.emit(k))
-            self._group.addButton(btn)
-            self._buttons[key] = btn
-            layout.addWidget(btn)
+        for gi, (section, items) in enumerate(NAV_GROUPS):
+            if gi:
+                layout.addSpacing(12)
+            header = QLabel(section)
+            header.setObjectName("NavGroupLabel")
+            layout.addWidget(header)
+            layout.addSpacing(4)
+            for key, label, icon_name in items:
+                btn = NavButton(label, icon_name)
+                btn.clicked.connect(lambda _=False, k=key: self.navigate.emit(k))
+                self._group.addButton(btn)
+                self._buttons[key] = btn
+                layout.addWidget(btn)
 
         layout.addStretch(1)
 
@@ -123,7 +139,7 @@ class NavSidebar(QWidget):
         foot.addStretch(1)
         layout.addLayout(foot)
 
-        ver = QLabel("v0.2 · purple-team")
+        ver = QLabel("v0.3 · purple-team")
         ver.setObjectName("Faint")
         ver.setStyleSheet(f"color: {PALETTE['text_faint']}; font-size: 10px;")
         layout.addWidget(ver)

@@ -12,7 +12,6 @@ from PySide6.QtWidgets import (
 )
 
 from ...config import REPO_ROOT, load_providers, load_registry
-from ..catalog import CASES
 from ..icons import icon
 from ..theme import PALETTE, rgba
 from .common import (
@@ -36,6 +35,13 @@ def _count_attack_labs() -> int:
     return sum(
         1 for p in attacks.iterdir() if p.is_dir() and p.name[:2].isdigit()
     )
+
+
+def _count_hardened_twins() -> int:
+    twins = REPO_ROOT / "defense" / "hardened_servers"
+    if not twins.exists():
+        return 0
+    return sum(1 for p in twins.glob("safe_*.py"))
 
 
 class StatCard(Card):
@@ -119,7 +125,7 @@ class DashboardPage(QWidget):
         self._providers_stat = StatCard("0 / 0", "Providers ready", "cpu", PALETTE["green"])
         self._servers_stat = StatCard("0", "MCP servers", "server", PALETTE["violet"])
         self._labs_stat = StatCard("0", "Attack labs", "skull", PALETTE["red"])
-        self._twins_stat = StatCard(str(len(CASES)), "Hardened twins", "lock", PALETTE["blue"])
+        self._twins_stat = StatCard(str(_count_hardened_twins()), "Hardened twins", "lock", PALETTE["blue"])
         for col, card in enumerate(
             (self._providers_stat, self._servers_stat, self._labs_stat, self._twins_stat)
         ):

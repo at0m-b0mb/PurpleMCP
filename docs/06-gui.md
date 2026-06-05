@@ -11,9 +11,10 @@ pip install -e ".[gui]"   # one-time: installs PySide6
 purplemcp gui             # or:  python -m purplemcp.gui
 ```
 
-Everything in the GUI works offline except the Chat Playground (which needs a
-real model) — the explorer, scanner, and arena drive the MCP protocol directly
-and never call an LLM.
+Most of the GUI works offline — the Tool Explorer, Scanner, Attack Lab, and
+Defense Lab drive the MCP protocol directly and never call an LLM. The Chat
+Playground needs a real model, the AI Models page talks to Ollama / the cloud
+providers, and the server catalog launches third-party servers via `npx`/`uvx`.
 
 ---
 
@@ -24,8 +25,10 @@ and spawns MCP servers as stdio subprocesses. The GUI bridges them in
 [`purplemcp/gui/async_bridge.py`](../purplemcp/gui/async_bridge.py):
 
 - a **single persistent asyncio loop** runs on a daemon thread;
-- one-shot work (list/call a tool, scan, run the arena) is submitted as a
-  coroutine and its result comes back on the GUI thread via a Qt signal;
+- one-shot work (list/call a tool, scan, verify a defense, pull a model) is
+  submitted as a coroutine and its result comes back on the GUI thread via a Qt
+  signal; streaming work (an exploit subprocess, a model pull) emits progress
+  events the same way;
 - the Chat Playground holds a **long-lived session task** that owns one
   `MCPHost` + `Agent` for its whole life (so anyio's task-scoped transports open
   and close in the same task) and takes user turns off a queue.
@@ -37,61 +40,78 @@ connections, which is thread-safe — that's the whole trick.
 
 ## The pages
 
-### Dashboard
+The sidebar groups everything into **Overview**, **Connect** (models, servers,
+tools, chat), **Red team** (Attack Lab), and **Blue team** (Defense Lab, Scanner).
+
+### Dashboard  ·  *Overview*
 Provider readiness (which keys are set), the registered MCP servers, and lab
 stats — attack modules and hardened twins — at a glance.
 
 ![Dashboard](images/gui/1_dashboard.png)
 
-### Tool Explorer
+### AI Models  ·  *Connect*
+Manage the models that drive the tools. For **local Ollama**: see installed
+models, **pull a new one with a live progress bar**, test it with a one-shot
+generation, or delete it. For **cloud providers**: paste an API key, **test it
+live**, and save it to your (gitignored) `.env`. Set the default provider too.
+
+![AI Models](images/gui/7_models.png)
+
+### MCP Servers  ·  *Connect*
+The registry of servers the host can launch — bundled examples plus your own.
+**Add a custom server** (stdio command/args or an http URL), or one-click **add
+from a catalog of real published servers** (filesystem, fetch, git, sqlite,
+memory, …). Install any server into Claude Desktop or copy its `mcp.json`.
+
+![MCP Servers](images/gui/8_servers.png)
+
+### Tool Explorer  ·  *Connect*
 Connect to any registered server, browse its tools, read each tool's JSON input
 schema, and **call a tool through an auto-generated form**. No model in the loop
 — this is the protocol, raw.
 
 ![Tool Explorer](images/gui/2_explorer.png)
 
-### Chat Playground
+### Chat Playground  ·  *Connect*
 Pick a provider/model and any set of servers, start a session, and chat. As the
-agent works, every **tool call and its result stream in live** as inline cards,
-so you can see exactly how the model is using the tools.
+agent works, every **tool call and its result stream in live** as inline cards.
 
 ![Chat Playground](images/gui/3_chat.png)
 
-### Security Scanner
+### Attack Lab  ·  *Red team*
+Browse all 17 modules grouped by family (MCP-specific vs classic appsec). Arm the
+lab, pick an attack, and **Run exploit** — it runs the module's *real*
+`exploit.py` as a subprocess and streams its narrated output live, with the
+writeup rendered alongside.
+
+![Attack Lab](images/gui/5_attacks.png)
+
+### Defense Lab  ·  *Blue team*
+The "how we fixed it" half. For each attack: a plain-English **mechanism**, the
+actual **guardrail source code** (syntax-highlighted), and **Verify** — which
+replays the same payload at the vulnerable server *and* its hardened twin, side by
+side, so you watch it get exploited (red) then blocked (blue). The verdict is
+computed honestly — an explicit attack-success "proof" string plus refusal
+phrases, not a black box.
+
+![Defense Lab](images/gui/6_defense.png)
+
+### Security Scanner  ·  *Blue team*
 Run the [scanner](../purplemcp/scanner.py) two ways: **static** over a file or
 directory (AST analysis — point it at `attacks/` to light it up), or **dynamic**
 against a live server's advertised tool definitions. Results come back as a
-severity distribution bar, summary pills, and per-finding cards with rule,
-location, and detail.
+severity distribution bar, summary pills, and per-finding cards.
 
 ![Security Scanner](images/gui/4_scanner.png)
-
-### Attack / Defend Arena
-The signature purple-team demo. Arm the lab, pick an attack, and fire the same
-payload at the **vulnerable server and its hardened twin, side by side**. The red
-column gets exploited; the blue column blocks it. The verdict on each side is
-computed honestly — an explicit "attack-success proof" string plus guardrail
-refusal phrases, not a black box.
-
-![Attack/Defend Arena](images/gui/5_arena.png)
-
-The bundled cases map to the attack catalog:
-
-| # | Case | Tool | Guardrail in the hardened twin |
-| --- | --- | --- | --- |
-| 03 | Command Injection | `ping` | `guardrails.exec.safe_run` (argv, no shell, allowlist) |
-| 04 | Path Traversal | `read_doc` | `guardrails.paths.safe_resolve` |
-| 05 | SSRF | `fetch` | `guardrails.net.safe_get` |
-| 06 | Token Theft | `get_debug_info` | `guardrails.secrets.scrub` |
-| 09 | Data Exfiltration | `backup_note` | endpoint allowlist + `scrub` + approval |
 
 ---
 
 ## Safety
 
-The arena launches intentionally-vulnerable servers, so it is gated exactly like
-the CLI lab: nothing insecure starts until you tick **Arm the lab** in the UI,
-which is the only thing that injects the `PURPLEMCP_LAB_ENABLED` opt-in token
-into a vulnerable server's environment. The sidebar shows a red **Lab ARMED**
-indicator while it's on. Exfiltration demos only ever reach a fake local sink.
-Read [ETHICS.md](../ETHICS.md) and only run this on a machine you own.
+The Attack Lab and Defense Lab launch intentionally-vulnerable servers, so they
+are gated exactly like the CLI lab: nothing insecure starts until you tick **Arm
+the lab** (a single shared switch across both pages), which is the only thing that
+injects the `PURPLEMCP_LAB_ENABLED` opt-in token into a vulnerable server's
+environment. The sidebar shows a red **Lab ARMED** indicator while it's on.
+Exfiltration demos only ever reach a fake local sink. Read
+[ETHICS.md](../ETHICS.md) and only run this on a machine you own.

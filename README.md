@@ -106,23 +106,27 @@ server, no browser.
 
 ![PurpleMCP dashboard](docs/images/gui/1_dashboard.png)
 
-It puts all of PurpleMCP behind five pages:
+It organizes all of PurpleMCP into clear sections:
 
-| Page | What it does |
-| --- | --- |
-| **Dashboard** | Provider readiness, registered servers, and lab stats at a glance. |
-| **Tool Explorer** | Browse a server's tools, inspect each JSON schema, and call any tool through an auto-generated form — no model required. |
-| **Chat Playground** | Chat with any provider/model and watch the agent's **tool calls + results stream live** as inline cards. |
-| **Security Scanner** | Run the static + dynamic scanner with a severity chart, summary pills, and per-finding cards. |
-| **Attack / Defend Arena** | The signature demo: arm the lab, fire one payload at a **vulnerable server and its hardened twin side by side**, and watch it get exploited, then blocked. |
+| Section | Page | What it does |
+| --- | --- | --- |
+| Overview | **Dashboard** | Provider readiness, registered servers, and lab stats at a glance. |
+| Connect | **AI Models** | Install/run local Ollama models (list, **pull with live progress**, test, delete) and set/test cloud API keys (saved to `.env`). |
+| Connect | **MCP Servers** | View the registry, **add your own servers**, one-click add from a **catalog of real published servers**, and install into Claude Desktop. |
+| Connect | **Tool Explorer** | Browse a server's tools, inspect each JSON schema, and call any tool through an auto-generated form — no model required. |
+| Connect | **Chat Playground** | Chat with any provider/model and watch the agent's **tool calls + results stream live** as inline cards. |
+| Red team | **Attack Lab** | Browse all 17 attacks by family and **run the real exploit** for each, streaming its output live (lab-gated). |
+| Blue team | **Defense Lab** | For each attack: the **guardrail source code** (syntax-highlighted), how the fix works, and a **Verify** that replays the payload at the vulnerable server and its hardened twin — exploited, then blocked. |
+| Blue team | **Security Scanner** | Run the static + dynamic scanner with a severity chart, summary pills, and per-finding cards. |
 
-The Attack/Defend arena, red vs blue:
+The Defense Lab — the guardrail, plus red-vs-blue proof:
 
-![Attack/Defend arena](docs/images/gui/5_arena.png)
+![Defense Lab](docs/images/gui/6_defense.png)
 
-> The arena only launches intentionally-vulnerable servers after you explicitly
-> **arm the lab** in the UI — the same opt-in friction as the CLI lab flag. See
-> [docs/06-gui.md](docs/06-gui.md) for a full tour, and [ETHICS.md](ETHICS.md).
+> The Attack Lab and Defense Lab only launch intentionally-vulnerable servers
+> after you explicitly **arm the lab** in the UI — the same opt-in friction as the
+> CLI lab flag. See [docs/06-gui.md](docs/06-gui.md) for a full tour, and
+> [ETHICS.md](ETHICS.md).
 
 ```bash
 pip install -e ".[gui]"   # one-time: pull in PySide6
@@ -172,7 +176,7 @@ See [docs/03-installing-models.md](docs/03-installing-models.md).
 
 ## 🔴 Pillar 2 — Attack *(lab only)*
 
-Thirteen self-contained modules, each a **vulnerable server + an exploit + a writeup**:
+Seventeen self-contained modules, each a **vulnerable server + an exploit + a writeup**:
 
 | # | Attack | What the attacker achieves |
 | --- | --- | --- |
@@ -189,6 +193,10 @@ Thirteen self-contained modules, each a **vulnerable server + an exploit + a wri
 | 11 | **Template / format-string injection** | `str.format` on a caller's template reaches secrets/globals |
 | 12 | **Tool shadowing** | A 2nd server registers the same tool name and intercepts calls |
 | 13 | **Insecure deserialization** | A tool `pickle.loads` an attacker blob → code execution |
+| 14 | **Broken access control (IDOR)** | A tool returns any record by id, ignoring the caller |
+| 15 | **Unrestricted file write** | A save tool escapes its root and overwrites startup files |
+| 16 | **Weak randomness** | "Secure" tokens minted from time/PRNG are forgeable |
+| 17 | **Output / log injection** | Tool output forges log lines / control chars into context |
 
 Full catalog with mechanics: [docs/04-attack-catalog.md](docs/04-attack-catalog.md).
 Each lives in [`attacks/NN_*/`](attacks/) and is gated by the safety switch.
@@ -211,6 +219,10 @@ the reusable primitives in [`purplemcp/guardrails/`](purplemcp/guardrails/):
 | Template / SSTI | `guardrails.templating.safe_format()` — `$name` only, no attribute access |
 | Tool shadowing | `guardrails.registry` — detect name collisions, allowlist `(server, tool)` |
 | Insecure deserialization | `guardrails.serialization.safe_loads()` — JSON only, refuses pickle |
+| Broken access control | `guardrails.authz.assert_owner()` — bind every access to the caller |
+| Unrestricted file write | `guardrails.paths.safe_resolve()` — confine writes to a root |
+| Weak randomness | `guardrails.tokens.new_token()` — CSPRNG + constant-time compare |
+| Output / log injection | `guardrails.framing.sanitize_output()` — strip control chars, frame data |
 
 And a scanner that flags risky MCP servers before you ever run them:
 

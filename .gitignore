@@ -5,6 +5,7 @@
 *.key
 *.pem
 secrets/
+servers.local.json
 
 # ---- Python ----
 __pycache__/

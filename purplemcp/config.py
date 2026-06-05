@@ -13,13 +13,14 @@ completely empty environment.
 
 from __future__ import annotations
 
+import json
 import os
 import sys
 from pathlib import Path
 from typing import Literal, Optional
 
 from dotenv import load_dotenv
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationError
 
 # Repo-relative anchors. __file__ = purplemcp/config.py → repo root is two up.
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -155,10 +156,44 @@ def default_registry() -> dict[str, ServerSpec]:
     }
 
 
+def user_registry_path() -> Path:
+    """Where user-added servers are persisted (gitignored, repo-local)."""
+    return REPO_ROOT / "servers.local.json"
+
+
+def load_user_registry() -> dict[str, ServerSpec]:
+    """User-added servers from ``servers.local.json`` (empty if absent/invalid)."""
+    path = user_registry_path()
+    if not path.exists():
+        return {}
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return {}
+    out: dict[str, ServerSpec] = {}
+    for name, entry in (raw or {}).items():
+        try:
+            out[name] = ServerSpec(name=name, **{k: v for k, v in entry.items() if k != "name"})
+        except ValidationError:
+            continue  # skip malformed entries rather than breaking the whole app
+    return out
+
+
+def save_user_registry(specs: dict[str, ServerSpec]) -> Path:
+    """Persist the user server registry; returns the file path."""
+    path = user_registry_path()
+    data = {name: spec.model_dump(exclude_none=True) for name, spec in specs.items()}
+    path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+    return path
+
+
 def load_registry() -> dict[str, ServerSpec]:
-    """The active server registry. Currently the bundled defaults; this is the
-    seam where you'd merge in a user-supplied JSON registry later."""
-    return default_registry()
+    """The active server registry: bundled defaults merged with user-added servers.
+
+    User entries (``servers.local.json``) win on name collisions, so you can
+    override a bundled server if you need to.
+    """
+    return {**default_registry(), **load_user_registry()}
 
 
 def ensure_sandbox() -> Path:

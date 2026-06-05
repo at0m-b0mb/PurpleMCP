@@ -197,6 +197,53 @@ CASES: list[ArenaCase] = [
                 "appears if code executed on the server. The hardened twin decodes as JSON, which "
                 "can't call code, and refuses the pickle stream outright.",
     ),
+    ArenaCase(
+        id="broken-access-control",
+        num="14",
+        title="Broken Access Control (IDOR)",
+        threat="A records tool returns any row by id, ignoring who is asking.",
+        tool="get_record",
+        benign_args={"record_id": 1},
+        attack_args={"record_id": 2},
+        proof="SSN-417-55-0199",
+        vuln_path=ATTACKS / "14_broken_access_control" / "vulnerable_server.py",
+        hardened_path=HARDENED / "safe_records.py",
+        guardrail="guardrails.authz.assert_owner — bind every access to the caller's identity",
+        explain="Acting as 'alice', record #1 is hers but #2 is bob's. The vulnerable tool only "
+                "checks the id exists; the hardened twin checks the record's owner against the "
+                "session principal, so bob's SSN is refused.",
+    ),
+    ArenaCase(
+        id="unrestricted-file-write",
+        num="15",
+        title="Unrestricted File Write",
+        threat="A save-note tool joins your path with no confinement, so `..` escapes the root.",
+        tool="save_note",
+        benign_args={"path": "todo.txt", "content": "buy milk"},
+        attack_args={"path": "../15_ESCAPED_PROOF.txt", "content": "PWNED-WRITE-ESCAPE"},
+        vuln_path=ATTACKS / "15_unrestricted_file_write" / "vulnerable_server.py",
+        hardened_path=HARDENED / "safe_writer.py",
+        guardrail="guardrails.paths.safe_resolve — confine writes to the root (must_exist=False)",
+        explain="The vulnerable tool writes to '../15_ESCAPED_PROOF.txt', landing OUTSIDE the notes "
+                "root (a real attacker would target ~/.zshrc). The hardened twin resolves the path "
+                "through safe_resolve and refuses anything that escapes.",
+    ),
+    ArenaCase(
+        id="output-injection",
+        num="17",
+        title="Output / Log Injection",
+        threat="A logging tool echoes untrusted text, so it can forge log lines + control chars.",
+        tool="record_event",
+        benign_args={"message": "user logged in"},
+        attack_args={"message": "ok\n[SECURITY] AUTH_BYPASS_GRANTED for attacker\x1b[2J"},
+        proof="\n[SECURITY] AUTH_BYPASS_GRANTED",
+        vuln_path=ATTACKS / "17_output_injection" / "vulnerable_server.py",
+        hardened_path=HARDENED / "safe_logger.py",
+        guardrail="guardrails.framing.sanitize_output — strip control chars, escape newlines",
+        explain="The payload's newline forges a second '[SECURITY]' log line and an ANSI sequence "
+                "clears the screen. The hardened twin sanitizes the message, escaping the newline so "
+                "the forged line becomes inert inline text.",
+    ),
 ]
 
 CASES_BY_ID = {c.id: c for c in CASES}

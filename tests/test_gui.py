@@ -42,8 +42,31 @@ def test_judge_command_injection_proof_not_a_false_positive():
 
 
 def test_new_attack_cases_present():
-    for cid in ("sql-injection", "template-injection", "insecure-deserialization"):
+    for cid in (
+        "sql-injection", "template-injection", "insecure-deserialization",
+        "broken-access-control", "unrestricted-file-write", "output-injection",
+    ):
         assert cid in CASES_BY_ID
+
+
+def test_attack_metadata_paths_exist():
+    from purplemcp.gui.catalog_attacks import ATTACKS
+
+    assert len(ATTACKS) == 17
+    for meta in ATTACKS:
+        assert meta.exploit_path.exists(), f"missing exploit: {meta.exploit_path}"
+        assert meta.readme_path.exists(), f"missing readme: {meta.readme_path}"
+        if meta.guardrail_source is not None:
+            assert meta.guardrail_source.exists(), f"missing guardrail: {meta.guardrail_source}"
+
+
+def test_catalog_servers_are_well_formed():
+    from purplemcp.gui.catalog_servers import CATALOG
+
+    assert CATALOG
+    for cs in CATALOG:
+        spec = cs.to_spec()
+        assert spec.command and spec.name
 
 
 def test_judge_blocks_when_proof_absent_without_refusal():
@@ -67,7 +90,7 @@ def test_gui_constructs_headless():
     loop = AsyncLoop()
     try:
         window = MainWindow(loop)
-        for key in ("dashboard", "explorer", "chat", "scanner", "arena"):
+        for key in ("dashboard", "models", "servers", "explorer", "chat", "attacks", "defense", "scanner"):
             window._go(key)
     finally:
         loop.shutdown()

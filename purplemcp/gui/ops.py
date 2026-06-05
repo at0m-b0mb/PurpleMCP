@@ -8,13 +8,15 @@ how MCP sessions are opened and torn down.
 from __future__ import annotations
 
 import asyncio
+import os
 import sys
 from dataclasses import dataclass
 from typing import Optional
 
-from ..config import ServerSpec
+from ..config import REPO_ROOT, ProviderConfig, ServerSpec
 from ..host import MCPHost
 from ..host.client import ToolInfo
+from .async_bridge import Job
 from .catalog import LAB_ENV_VAR, LAB_TOKEN, ArenaCase
 
 
@@ -93,3 +95,108 @@ async def arena_run(case: ArenaCase) -> ArenaResult:
         _lab_spec(case.hardened_path, "hardened"), case.tool, case.benign_args, case.attack_args
     )
     return result
+
+
+# --------------------------------------------------------------------------- #
+#  attack lab — run a real exploit script, streaming its output
+# --------------------------------------------------------------------------- #
+async def run_exploit(job: Job, exploit_path: str) -> int:
+    """Run ``exploit_path`` as a subprocess (lab token injected), streaming stdout.
+
+    The opt-in token is set ONLY here, so a vulnerable server can't start unless
+    the caller (the armed Attack Lab) actually invokes this.
+    """
+    env = {**os.environ, LAB_ENV_VAR: LAB_TOKEN}
+    proc = await asyncio.create_subprocess_exec(
+        sys.executable, "-u", str(exploit_path),
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.STDOUT,
+        env=env,
+        cwd=str(REPO_ROOT),
+    )
+    assert proc.stdout is not None
+    async for raw in proc.stdout:
+        job.event.emit("line", raw.decode("utf-8", "replace").rstrip("\n"))
+    return await proc.wait()
+
+
+# --------------------------------------------------------------------------- #
+#  AI models — ollama management + provider key tests
+# --------------------------------------------------------------------------- #
+def _model_field(entry, *names):
+    for n in names:
+        val = getattr(entry, n, None)
+        if val is None and isinstance(entry, dict):
+            val = entry.get(n)
+        if val is not None:
+            return val
+    return None
+
+
+async def ollama_list() -> list[dict]:
+    """Installed Ollama models as ``[{name, size}]`` (works across lib versions)."""
+    import ollama
+
+    res = await asyncio.to_thread(ollama.list)
+    models = _model_field(res, "models") or (res.get("models") if isinstance(res, dict) else []) or []
+    out = []
+    for m in models:
+        name = _model_field(m, "model", "name")
+        size = _model_field(m, "size") or 0
+        if name:
+            out.append({"name": name, "size": int(size or 0)})
+    return out
+
+
+async def ollama_test(model: str) -> str:
+    import ollama
+
+    res = await asyncio.to_thread(
+        lambda: ollama.chat(
+            model=model,
+            messages=[{"role": "user", "content": "Reply with exactly one word: pong"}],
+        )
+    )
+    msg = _model_field(res, "message")
+    content = _model_field(msg, "content") if msg is not None else None
+    return (content or "").strip() or "(empty response)"
+
+
+async def ollama_delete(model: str) -> str:
+    import ollama
+
+    await asyncio.to_thread(ollama.delete, model)
+    return f"deleted {model}"
+
+
+async def ollama_pull(job: Job, model: str) -> str:
+    """Pull a model, emitting ('progress', {status, completed, total}) events."""
+    import ollama
+
+    def _pull() -> None:
+        for chunk in ollama.pull(model, stream=True):
+            job.event.emit(
+                "progress",
+                {
+                    "status": _model_field(chunk, "status") or "",
+                    "completed": _model_field(chunk, "completed") or 0,
+                    "total": _model_field(chunk, "total") or 0,
+                },
+            )
+
+    await asyncio.to_thread(_pull)
+    return f"pulled {model}"
+
+
+async def provider_test(cfg: ProviderConfig) -> str:
+    """Make one minimal live completion to verify a provider/key works."""
+    from ..providers import build_provider
+    from ..providers.base import Message
+
+    provider = build_provider(cfg)
+    reply = await asyncio.to_thread(
+        provider.complete,
+        [Message(role="user", content="Reply with exactly one word: pong")],
+        [],
+    )
+    return (reply.content or "").strip() or "(empty response)"

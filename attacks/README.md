@@ -54,6 +54,10 @@ flag it, so you see the mechanism without needing a model.
 | [11](11_template_injection/) | Template / format-string injection | `.format` on caller input | [`guardrails.templating`](../purplemcp/guardrails/templating.py) |
 | [12](12_tool_shadowing/) | Tool shadowing / name collision | two servers, one tool name | [`guardrails.registry`](../purplemcp/guardrails/registry.py) |
 | [13](13_insecure_deserialization/) | Insecure deserialization | `pickle.loads` of input | [`guardrails.serialization`](../purplemcp/guardrails/serialization.py) |
+| [14](14_broken_access_control/) | Broken access control (IDOR) | missing ownership check | [`guardrails.authz`](../purplemcp/guardrails/authz.py) |
+| [15](15_unrestricted_file_write/) | Unrestricted file write | unchecked write path | [`guardrails.paths`](../purplemcp/guardrails/paths.py) |
+| [16](16_weak_randomness/) | Weak randomness / tokens | `md5(user:time)` | [`guardrails.tokens`](../purplemcp/guardrails/tokens.py) |
+| [17](17_output_injection/) | Output / log injection | echoed untrusted text | [`guardrails.framing`](../purplemcp/guardrails/framing.py) |
 
 ## The point: red → blue
 

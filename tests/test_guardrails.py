@@ -176,3 +176,47 @@ class TestRegistry:
     def test_assert_raises_on_shadowing(self):
         with pytest.raises(g.ToolShadowingError):
             g.assert_no_shadowing(self._tools())
+
+
+class TestAuthz:
+    def test_owner_allowed(self):
+        g.assert_owner("alice", "alice")  # must not raise
+
+    def test_admin_scope_allowed(self):
+        assert g.can_access("ops", "bob", ["admin"])
+
+    def test_other_denied(self):
+        with pytest.raises(g.AuthorizationError):
+            g.assert_owner("alice", "bob")
+
+    def test_require_scope(self):
+        with pytest.raises(g.AuthorizationError):
+            g.require_scope(["read"], "admin")
+
+
+class TestTokens:
+    def test_unique_and_long(self):
+        assert g.new_token() != g.new_token()
+        assert len(g.new_token()) >= 32
+
+    def test_rejects_low_entropy(self):
+        with pytest.raises(ValueError):
+            g.new_token(4)
+
+    def test_constant_time_compare(self):
+        assert g.constant_time_compare("abc", "abc")
+        assert not g.constant_time_compare("abc", "abd")
+
+
+class TestFraming:
+    def test_strips_ansi_and_control(self):
+        assert g.strip_control("a\x1b[31mb\x07c") == "abc"
+
+    def test_escapes_newlines(self):
+        out = g.sanitize_output("ok\nFORGED")
+        assert "\n" not in out and "\\n" in out
+
+    def test_frame_wraps_and_flattens(self):
+        out = g.frame_untrusted("hi\nthere")
+        assert out.startswith("<untrusted>") and out.endswith("</untrusted>")
+        assert "\n" not in out

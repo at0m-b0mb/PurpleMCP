@@ -32,6 +32,10 @@ model (or whoever injects into it) can now trigger them:
 | [10](../attacks/10_sql_injection/) | SQL injection | query built by string-formatting model input |
 | [11](../attacks/11_template_injection/) | Template injection | `str.format`/SSTI on a caller-controlled template |
 | [13](../attacks/13_insecure_deserialization/) | Insecure deserialization | `pickle.loads` of an attacker blob = RCE |
+| [14](../attacks/14_broken_access_control/) | Broken access control (IDOR) | returns any record by id, no ownership check |
+| [15](../attacks/15_unrestricted_file_write/) | Unrestricted file write | write path escapes the root (persistence) |
+| [16](../attacks/16_weak_randomness/) | Weak randomness | predictable tokens from time/PRNG |
+| [17](../attacks/17_output_injection/) | Output / log injection | echoed tool output forges lines / control chars |
 
 ## The killer combination
 

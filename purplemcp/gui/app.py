@@ -15,12 +15,16 @@ from PySide6.QtWidgets import (
 )
 
 from .async_bridge import AsyncLoop
+from .state import LabState
 from .theme import stylesheet
-from .widgets.arena import ArenaPage
+from .widgets.attacks import AttackLabPage
 from .widgets.chat import ChatPage
 from .widgets.dashboard import DashboardPage
+from .widgets.defense import DefenseLabPage
 from .widgets.explorer import ToolExplorerPage
+from .widgets.models import ModelsPage
 from .widgets.scanner import ScannerPage
+from .widgets.servers import ServersPage
 from .widgets.sidebar import NAV_ITEMS, NavSidebar
 
 
@@ -51,20 +55,22 @@ class MainWindow(QMainWindow):
         layout.addWidget(content, 1)
         self.setCentralWidget(root)
 
+        # shared lab-arm state (Attack Lab + Defense Lab + sidebar status)
+        self._lab = LabState(self)
+        self._lab.changed.connect(self._sidebar.set_lab_status)
+
         # pages, in nav order
         self._dashboard = DashboardPage()
-        self._explorer = ToolExplorerPage(loop)
         self._chat = ChatPage(loop)
-        self._scanner = ScannerPage(loop)
-        self._arena = ArenaPage(loop)
-        self._arena.lab_armed_changed.connect(self._sidebar.set_lab_status)
-
         self._pages = {
             "dashboard": self._dashboard,
-            "explorer": self._explorer,
+            "models": ModelsPage(loop),
+            "servers": ServersPage(loop),
+            "explorer": ToolExplorerPage(loop),
             "chat": self._chat,
-            "scanner": self._scanner,
-            "arena": self._arena,
+            "attacks": AttackLabPage(loop, self._lab),
+            "defense": DefenseLabPage(loop, self._lab),
+            "scanner": ScannerPage(loop),
         }
         self._keys = [key for key, _, _ in NAV_ITEMS]
         for key in self._keys:

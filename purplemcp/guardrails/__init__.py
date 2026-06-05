@@ -9,6 +9,7 @@ Each module documents the exact attack it neutralizes.
 """
 
 from .approval import ApprovalDenied, auto_allow, auto_deny, cli_confirm, require
+from .authz import AuthorizationError, assert_owner, can_access, require_scope
 from .descriptions import (
     ToolPinner,
     find_injection,
@@ -18,6 +19,7 @@ from .descriptions import (
 )
 from .exec import CommandNotAllowed
 from .exec import run as safe_run
+from .framing import frame_untrusted, sanitize_output, strip_control
 from .net import SSRFError, assert_url_allowed, safe_get
 from .paths import PathTraversalError, safe_resolve
 from .ratelimit import RateLimiter, RateLimitExceeded
@@ -32,6 +34,7 @@ from .secrets import find_secrets, scrub
 from .serialization import UnsafeDeserialization, looks_like_pickle, safe_loads
 from .sqlsafe import SQLIdentifierError, like_escape, safe_identifier
 from .templating import TemplateInjectionError, safe_format
+from .tokens import constant_time_compare, new_hex_token, new_token
 
 __all__ = [
     # paths
@@ -79,4 +82,17 @@ __all__ = [
     "assert_no_shadowing",
     "base_name",
     "ToolShadowingError",
+    # authz (broken access control)
+    "assert_owner",
+    "can_access",
+    "require_scope",
+    "AuthorizationError",
+    # tokens (weak randomness)
+    "new_token",
+    "new_hex_token",
+    "constant_time_compare",
+    # framing (output / log injection)
+    "strip_control",
+    "sanitize_output",
+    "frame_untrusted",
 ]
