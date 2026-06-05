@@ -68,6 +68,7 @@ class MainWindow(QMainWindow):
 
         # pages, in nav order
         self._dashboard = DashboardPage()
+        self._dashboard.navigate.connect(self._go_and_select)
         self._chat = ChatPage(loop)
         self._pages = {
             "dashboard": self._dashboard,

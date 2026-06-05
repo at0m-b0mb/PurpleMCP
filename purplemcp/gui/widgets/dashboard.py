@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
     QGridLayout,
     QHBoxLayout,
     QLabel,
+    QPushButton,
     QVBoxLayout,
     QWidget,
 )
@@ -102,7 +103,18 @@ class HeroCard(Card):
         self.body.addLayout(pillars)
 
 
+QUICK_ACTIONS = [
+    ("attacks", "Run an attack", "skull", "red"),
+    ("defense", "Verify a defense", "lock", "blue"),
+    ("scanner", "Scan a server", "search", "cyan"),
+    ("models", "Manage models", "cpu", "green"),
+    ("research", "Run benchmark", "chart", "purple"),
+]
+
+
 class DashboardPage(QWidget):
+    navigate = Signal(str)  # page key — wired to the main window's switcher
+
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
         inner = QWidget()
@@ -132,6 +144,15 @@ class DashboardPage(QWidget):
             self._stats.addWidget(card, 0, col)
         root.addLayout(self._stats)
 
+        # quick actions — clickable tiles that deep-link into the app
+        qa = Card("Quick actions", "Jump straight in")
+        qrow = QHBoxLayout()
+        qrow.setSpacing(12)
+        for key, title, icon_name, color_key in QUICK_ACTIONS:
+            qrow.addWidget(self._make_tile(key, title, icon_name, PALETTE[color_key]))
+        qa.body.addLayout(qrow)
+        root.addWidget(qa)
+
         # detail cards row
         detail = QHBoxLayout()
         detail.setSpacing(16)
@@ -153,6 +174,19 @@ class DashboardPage(QWidget):
         outer.setContentsMargins(0, 0, 0, 0)
         outer.addWidget(make_scroll(inner))
         self.refresh()
+
+    def _make_tile(self, key: str, title: str, icon_name: str, color: str) -> QPushButton:
+        tile = QPushButton(f"  {title}")
+        tile.setIcon(icon(icon_name, color, 18))
+        tile.setCursor(Qt.PointingHandCursor)
+        tile.setStyleSheet(
+            f"QPushButton {{ background: {PALETTE['surface_2']}; color: {PALETTE['text']};"
+            f" border: 1px solid {PALETTE['border']}; border-radius: 12px;"
+            f" padding: 14px 12px; text-align: left; font-weight: 600; }}"
+            f"QPushButton:hover {{ border-color: {color}; background: {PALETTE['surface_hi']}; }}"
+        )
+        tile.clicked.connect(lambda _=False, k=key: self.navigate.emit(k))
+        return tile
 
     # -- data ------------------------------------------------------------- #
     def refresh(self) -> None:
