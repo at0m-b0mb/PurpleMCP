@@ -10,7 +10,9 @@ OS-independent rather than a black box.
 from __future__ import annotations
 
 import base64
+import io
 import pickle
+import zipfile
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -43,6 +45,19 @@ def _pickle_rce_blob() -> str:
 
 
 _DESERIAL_BLOB = _pickle_rce_blob()
+
+
+def _zip_blob(entries: dict[str, str]) -> str:
+    """A base64 zip built from {member_name: content}. Used by the zip-slip case."""
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w") as zf:
+        for name, content in entries.items():
+            zf.writestr(name, content)
+    return base64.b64encode(buf.getvalue()).decode()
+
+
+_CLEAN_ZIP = _zip_blob({"notes/hello.txt": "hi"})
+_SLIP_ZIP = _zip_blob({"../19_ZIPSLIP_PROOF.txt": "PWNED-BY-ZIP-SLIP"})
 
 
 @dataclass(frozen=True)
@@ -243,6 +258,70 @@ CASES: list[ArenaCase] = [
         explain="The payload's newline forges a second '[SECURITY]' log line and an ANSI sequence "
                 "clears the screen. The hardened twin sanitizes the message, escaping the newline so "
                 "the forged line becomes inert inline text.",
+    ),
+    ArenaCase(
+        id="eval-injection",
+        num="18",
+        title="Eval / Expression Injection",
+        threat="A calculator tool runs eval() on the expression — arbitrary code.",
+        tool="calculate",
+        benign_args={"expr": "2 + 3 * 4"},
+        # 'PWN42' is computed ('PWN' + str(6*7)); it is not a literal in the input.
+        attack_args={"expr": "'PWN' + str(6 * 7)"},
+        proof="PWN42",
+        vuln_path=ATTACKS / "18_eval_injection" / "vulnerable_server.py",
+        hardened_path=HARDENED / "safe_calculator.py",
+        guardrail="guardrails.safe_eval — ast-validated arithmetic only",
+        explain="eval evaluates Python, not math: 'PWN'+str(6*7) returns PWN42 (and os.popen would "
+                "spawn a shell). safe_eval walks the AST and allows only numbers + arithmetic "
+                "operators, so the expression is refused.",
+    ),
+    ArenaCase(
+        id="zip-slip",
+        num="19",
+        title="Zip Slip / Archive Traversal",
+        threat="An unpack tool trusts archive member names, so '../x' escapes the dir.",
+        tool="unpack",
+        benign_args={"zip_b64": _CLEAN_ZIP},
+        attack_args={"zip_b64": _SLIP_ZIP},
+        vuln_path=ATTACKS / "19_zip_slip" / "vulnerable_server.py",
+        hardened_path=HARDENED / "safe_unpacker.py",
+        guardrail="guardrails.paths.safe_resolve — confine every archive member",
+        explain="The archive's member '../19_ZIPSLIP_PROOF.txt' makes the vulnerable tool write "
+                "OUTSIDE its unpack folder. The hardened twin resolves each member under the root "
+                "and refuses anything that escapes.",
+    ),
+    ArenaCase(
+        id="mass-assignment",
+        num="20",
+        title="Mass Assignment / Privilege Escalation",
+        threat="An update tool binds every field the caller sends, including role.",
+        tool="update_profile",
+        benign_args={"updates": {"display_name": "Mallory M."}},
+        attack_args={"updates": {"display_name": "Mallory M.", "role": "admin", "is_admin": True}},
+        proof="role=admin",
+        vuln_path=ATTACKS / "20_mass_assignment" / "vulnerable_server.py",
+        hardened_path=HARDENED / "safe_profile.py",
+        guardrail="guardrails.assert_assignable — editable-field allowlist",
+        explain="The update smuggles role=admin alongside the display name. The vulnerable tool "
+                "applies every key; the hardened twin allowlists editable fields, so role/is_admin "
+                "are refused.",
+    ),
+    ArenaCase(
+        id="csv-injection",
+        num="21",
+        title="CSV / Formula Injection",
+        threat="An export tool writes cells verbatim, so a leading '=' becomes a formula.",
+        tool="export_row",
+        benign_args={"name": "Alice", "note": "friend"},
+        attack_args={"name": "Alice", "note": "=DANGER_FORMULA(2+3)"},
+        proof=",=DANGER_FORMULA",
+        vuln_path=ATTACKS / "21_csv_injection" / "vulnerable_server.py",
+        hardened_path=HARDENED / "safe_csv.py",
+        guardrail="guardrails.csvsafe.escape_formula — force formula cells to text",
+        explain="The note cell '=DANGER_FORMULA(2+3)' is a live formula a spreadsheet runs on open. "
+                "The hardened twin prefixes a quote so the cell is text and the ',=' formula start "
+                "disappears.",
     ),
 ]
 

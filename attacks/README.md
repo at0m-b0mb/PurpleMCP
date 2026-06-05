@@ -58,6 +58,10 @@ flag it, so you see the mechanism without needing a model.
 | [15](15_unrestricted_file_write/) | Unrestricted file write | unchecked write path | [`guardrails.paths`](../purplemcp/guardrails/paths.py) |
 | [16](16_weak_randomness/) | Weak randomness / tokens | `md5(user:time)` | [`guardrails.tokens`](../purplemcp/guardrails/tokens.py) |
 | [17](17_output_injection/) | Output / log injection | echoed untrusted text | [`guardrails.framing`](../purplemcp/guardrails/framing.py) |
+| [18](18_eval_injection/) | Eval / expression injection | `eval()` on input | [`guardrails.safe_eval`](../purplemcp/guardrails/safe_eval.py) |
+| [19](19_zip_slip/) | Zip slip / archive traversal | trusted archive member names | [`guardrails.paths`](../purplemcp/guardrails/paths.py) |
+| [20](20_mass_assignment/) | Mass assignment / priv-esc | `record.update(payload)` | [`guardrails.authz`](../purplemcp/guardrails/authz.py) |
+| [21](21_csv_injection/) | CSV / formula injection | leading `=` in a cell | [`guardrails.csvsafe`](../purplemcp/guardrails/csvsafe.py) |
 
 ## The point: red → blue
 

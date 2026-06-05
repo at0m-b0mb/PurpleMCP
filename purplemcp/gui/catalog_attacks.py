@@ -97,6 +97,18 @@ ATTACKS: list[AttackMeta] = [
     AttackMeta("16", "weak-randomness", "Weak Randomness / Predictable Tokens", FAMILY_CLASSIC, "HIGH",
                "'Secure' tokens minted from time/PRNG are forgeable.",
                "16_weak_randomness", "tokens.py"),
+    AttackMeta("18", "eval-injection", "Eval / Expression Injection", FAMILY_CLASSIC, "HIGH",
+               "A 'calculator' tool uses eval() — arbitrary code execution.",
+               "18_eval_injection", "safe_eval.py", "eval-injection"),
+    AttackMeta("19", "zip-slip", "Zip Slip / Archive Traversal", FAMILY_CLASSIC, "HIGH",
+               "An archive member named '../x' writes outside the extract dir.",
+               "19_zip_slip", "paths.py", "zip-slip"),
+    AttackMeta("20", "mass-assignment", "Mass Assignment / Priv-Esc", FAMILY_CLASSIC, "HIGH",
+               "An update tool binds any field the caller sends — including role.",
+               "20_mass_assignment", "authz.py", "mass-assignment"),
+    AttackMeta("21", "csv-injection", "CSV / Formula Injection", FAMILY_CLASSIC, "MEDIUM",
+               "An exported cell starting with '=' runs as a spreadsheet formula.",
+               "21_csv_injection", "csvsafe.py", "csv-injection"),
 ]
 
 ATTACKS_BY_ID = {a.id: a for a in ATTACKS}

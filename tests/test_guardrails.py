@@ -220,3 +220,51 @@ class TestFraming:
         out = g.frame_untrusted("hi\nthere")
         assert out.startswith("<untrusted>") and out.endswith("</untrusted>")
         assert "\n" not in out
+
+
+class TestSafeEval:
+    def test_evaluates_arithmetic(self):
+        assert g.safe_eval("2 + 3 * 4") == 14
+        assert g.safe_eval("-(2 ** 3)") == -8
+
+    @pytest.mark.parametrize(
+        "expr",
+        [
+            "'PWN' + str(6 * 7)",             # strings / calls
+            "__import__('os').system('id')",  # imports
+            "(1).__class__",                  # attribute access
+            "x + 1",                          # names
+            "[i for i in range(3)]",          # comprehensions
+        ],
+    )
+    def test_rejects_non_arithmetic(self, expr):
+        with pytest.raises(g.UnsafeExpression):
+            g.safe_eval(expr)
+
+    def test_error_does_not_echo_payload(self):
+        # The reject message must not leak a computed proof back to the caller.
+        try:
+            g.safe_eval("'PWN' + str(6 * 7)")
+        except g.UnsafeExpression as exc:
+            assert "PWN42" not in str(exc)
+
+
+class TestCsvSafe:
+    @pytest.mark.parametrize("value", ["=cmd", "+1", "-1", "@SUM", "\tx"])
+    def test_detects_formula(self, value):
+        assert g.is_formula(value)
+
+    def test_escapes_formula_leads(self):
+        assert g.escape_formula('=HYPERLINK("x")') == "'=HYPERLINK(\"x\")"
+
+    def test_passes_plain_text(self):
+        assert g.escape_formula("Alice") == "Alice"
+
+
+class TestMassAssignment:
+    def test_allows_allowlisted_fields(self):
+        g.assert_assignable({"display_name": "x"}, {"display_name", "email"})  # no raise
+
+    def test_blocks_privileged_fields(self):
+        with pytest.raises(g.AuthorizationError):
+            g.assert_assignable({"display_name": "x", "role": "admin"}, {"display_name"})

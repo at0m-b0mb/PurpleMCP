@@ -9,7 +9,14 @@ Each module documents the exact attack it neutralizes.
 """
 
 from .approval import ApprovalDenied, auto_allow, auto_deny, cli_confirm, require
-from .authz import AuthorizationError, assert_owner, can_access, require_scope
+from .authz import (
+    AuthorizationError,
+    assert_assignable,
+    assert_owner,
+    can_access,
+    require_scope,
+)
+from .csvsafe import escape_formula, is_formula
 from .descriptions import (
     ToolPinner,
     find_injection,
@@ -23,6 +30,7 @@ from .framing import frame_untrusted, sanitize_output, strip_control
 from .net import SSRFError, assert_url_allowed, safe_get
 from .paths import PathTraversalError, safe_resolve
 from .ratelimit import RateLimiter, RateLimitExceeded
+from .safe_eval import UnsafeExpression, safe_eval
 from .registry import (
     ToolShadowingError,
     assert_no_shadowing,
@@ -82,11 +90,18 @@ __all__ = [
     "assert_no_shadowing",
     "base_name",
     "ToolShadowingError",
-    # authz (broken access control)
+    # authz (broken access control + mass assignment)
     "assert_owner",
     "can_access",
     "require_scope",
+    "assert_assignable",
     "AuthorizationError",
+    # safe_eval (eval / expression injection)
+    "safe_eval",
+    "UnsafeExpression",
+    # csvsafe (CSV / formula injection)
+    "escape_formula",
+    "is_formula",
     # tokens (weak randomness)
     "new_token",
     "new_hex_token",

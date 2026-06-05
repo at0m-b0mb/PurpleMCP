@@ -44,3 +44,15 @@ def require_scope(have: Iterable[str], need: str) -> None:
     """Raise unless ``need`` is among the caller's granted scopes."""
     if need not in set(have):
         raise AuthorizationError(f"missing required scope {need!r}")
+
+
+def assert_assignable(updates: Iterable[str], allowed: Iterable[str]) -> None:
+    """The fix for **mass assignment** — reject writes to non-allowlisted fields.
+
+    A tool that does ``record.update(payload)`` lets the caller set *any* field,
+    including privileged ones (``role``, ``is_admin``) the UI never exposes. Pass
+    an explicit allowlist of editable fields; anything else is refused.
+    """
+    extra = sorted(set(updates) - set(allowed))
+    if extra:
+        raise AuthorizationError(f"fields not editable: {extra}")

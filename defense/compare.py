@@ -35,6 +35,20 @@ class _PickleRCEProof:
 
 _PICKLE_BLOB = base64.b64encode(pickle.dumps(_PickleRCEProof())).decode()
 
+
+def _zip_blob(entries: dict) -> str:
+    import io
+    import zipfile
+
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w") as zf:
+        for name, content in entries.items():
+            zf.writestr(name, content)
+    return base64.b64encode(buf.getvalue()).decode()
+
+
+_SLIP_BLOB = _zip_blob({"../19_ZIPSLIP_PROOF.txt": "PWNED-BY-ZIP-SLIP"})
+
 CASES = [
     (
         "command injection",
@@ -98,6 +112,34 @@ CASES = [
         {"message": "ok\n[SECURITY] AUTH_BYPASS_GRANTED\x1b[2J"},
         REPO / "attacks/17_output_injection/vulnerable_server.py",
         REPO / "defense/hardened_servers/safe_logger.py",
+    ),
+    (
+        "eval injection",
+        "calculate",
+        {"expr": "'PWN' + str(6 * 7)"},
+        REPO / "attacks/18_eval_injection/vulnerable_server.py",
+        REPO / "defense/hardened_servers/safe_calculator.py",
+    ),
+    (
+        "zip slip",
+        "unpack",
+        {"zip_b64": _SLIP_BLOB},
+        REPO / "attacks/19_zip_slip/vulnerable_server.py",
+        REPO / "defense/hardened_servers/safe_unpacker.py",
+    ),
+    (
+        "mass assignment",
+        "update_profile",
+        {"updates": {"display_name": "x", "role": "admin", "is_admin": True}},
+        REPO / "attacks/20_mass_assignment/vulnerable_server.py",
+        REPO / "defense/hardened_servers/safe_profile.py",
+    ),
+    (
+        "csv / formula injection",
+        "export_row",
+        {"name": "Alice", "note": "=DANGER_FORMULA(2+3)"},
+        REPO / "attacks/21_csv_injection/vulnerable_server.py",
+        REPO / "defense/hardened_servers/safe_csv.py",
     ),
 ]
 

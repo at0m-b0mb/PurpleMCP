@@ -115,7 +115,7 @@ It organizes all of PurpleMCP into clear sections:
 | Connect | **MCP Servers** | View the registry, **add your own servers**, one-click add from a **catalog of real published servers**, and install into Claude Desktop. |
 | Connect | **Tool Explorer** | Browse a server's tools, inspect each JSON schema, and call any tool through an auto-generated form — no model required. |
 | Connect | **Chat Playground** | Chat with any provider/model and watch the agent's **tool calls + results stream live** as inline cards. |
-| Red team | **Attack Lab** | Browse all 17 attacks by family and **run the real exploit** for each, streaming its output live (lab-gated). |
+| Red team | **Attack Lab** | Browse all 21 attacks by family and **run the real exploit** for each, streaming its output live (lab-gated). |
 | Blue team | **Defense Lab** | For each attack: the **guardrail source code** (syntax-highlighted), how the fix works, and a **Verify** that replays the payload at the vulnerable server and its hardened twin — exploited, then blocked. |
 | Blue team | **Security Scanner** | Run the static + dynamic scanner with a severity chart, summary pills, and per-finding cards. |
 
@@ -197,6 +197,10 @@ Seventeen self-contained modules, each a **vulnerable server + an exploit + a wr
 | 15 | **Unrestricted file write** | A save tool escapes its root and overwrites startup files |
 | 16 | **Weak randomness** | "Secure" tokens minted from time/PRNG are forgeable |
 | 17 | **Output / log injection** | Tool output forges log lines / control chars into context |
+| 18 | **Eval / expression injection** | A "calculator" tool uses `eval()` — arbitrary code execution |
+| 19 | **Zip slip** | An archive member named `../x` writes outside the extract dir |
+| 20 | **Mass assignment** | An update tool binds any field the caller sends — including `role` |
+| 21 | **CSV / formula injection** | An exported cell starting with `=` runs as a spreadsheet formula |
 
 Full catalog with mechanics: [docs/04-attack-catalog.md](docs/04-attack-catalog.md).
 Each lives in [`attacks/NN_*/`](attacks/) and is gated by the safety switch.
@@ -223,6 +227,10 @@ the reusable primitives in [`purplemcp/guardrails/`](purplemcp/guardrails/):
 | Unrestricted file write | `guardrails.paths.safe_resolve()` — confine writes to a root |
 | Weak randomness | `guardrails.tokens.new_token()` — CSPRNG + constant-time compare |
 | Output / log injection | `guardrails.framing.sanitize_output()` — strip control chars, frame data |
+| Eval / expression injection | `guardrails.safe_eval()` — ast-validated arithmetic, no names/calls |
+| Zip slip | `guardrails.paths.safe_resolve()` — confine every archive member |
+| Mass assignment | `guardrails.authz.assert_assignable()` — editable-field allowlist |
+| CSV / formula injection | `guardrails.csvsafe.escape_formula()` — force formula cells to text |
 
 And a scanner that flags risky MCP servers before you ever run them:
 

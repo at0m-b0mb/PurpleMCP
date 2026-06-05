@@ -45,6 +45,7 @@ def test_new_attack_cases_present():
     for cid in (
         "sql-injection", "template-injection", "insecure-deserialization",
         "broken-access-control", "unrestricted-file-write", "output-injection",
+        "eval-injection", "zip-slip", "mass-assignment", "csv-injection",
     ):
         assert cid in CASES_BY_ID
 
@@ -52,7 +53,7 @@ def test_new_attack_cases_present():
 def test_attack_metadata_paths_exist():
     from purplemcp.gui.catalog_attacks import ATTACKS
 
-    assert len(ATTACKS) == 17
+    assert len(ATTACKS) == 21
     for meta in ATTACKS:
         assert meta.exploit_path.exists(), f"missing exploit: {meta.exploit_path}"
         assert meta.readme_path.exists(), f"missing readme: {meta.readme_path}"

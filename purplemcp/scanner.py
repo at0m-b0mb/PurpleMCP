@@ -140,6 +140,12 @@ class _StaticVisitor(ast.NodeVisitor):
                           "SQL built from a non-constant string — use parameterized "
                           "queries (? placeholders), see guardrails.sqlsafe")
 
+        # zip slip: extractall() trusts archive member paths
+        if tail == "extractall":
+            self._add("MEDIUM", "zip-slip", node,
+                      "archive extractall() can write outside the target dir — validate "
+                      "each member with guardrails.paths.safe_resolve")
+
         self.generic_visit(node)
 
     def visit_Constant(self, node: ast.Constant) -> None:
