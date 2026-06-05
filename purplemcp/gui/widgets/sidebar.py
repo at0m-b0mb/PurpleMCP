@@ -38,6 +38,9 @@ NAV_GROUPS = [
     ("RESEARCH", [
         ("research", "Research", "chart"),
     ]),
+    ("SYSTEM", [
+        ("settings", "Settings", "gear"),
+    ]),
 ]
 
 # Flattened (page key, label, icon) in display order — used by the app to build pages.

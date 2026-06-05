@@ -28,6 +28,7 @@ from .widgets.palette import CommandPalette
 from .widgets.research import ResearchPage
 from .widgets.scanner import ScannerPage
 from .widgets.servers import ServersPage
+from .widgets.settings import SettingsPage
 from .widgets.sidebar import NAV_ITEMS, NavSidebar
 from .widgets.statusbar import StatusBar
 
@@ -79,6 +80,7 @@ class MainWindow(QMainWindow):
             "defense": DefenseLabPage(loop, self._lab),
             "scanner": ScannerPage(loop),
             "research": ResearchPage(loop),
+            "settings": SettingsPage(loop, self._lab),
         }
         self._keys = [key for key, _, _ in NAV_ITEMS]
         for key in self._keys:

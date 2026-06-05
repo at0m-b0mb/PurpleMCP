@@ -53,6 +53,9 @@ _ICONS: dict[str, str] = {
     "book":      '<path d="M6 4h12a1 1 0 0 1 1 1v15H7a2 2 0 0 0-2 2V6a2 2 0 0 1 2-2z" '
                  'stroke-linejoin="round"/><path d="M9 4v16"/>',
     "command":   '<path d="M9 6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3z"/>',
+    "gear":      '<circle cx="12" cy="12" r="3"/>'
+                 '<path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2'
+                 'M5.2 5.2l1.6 1.6M17.2 17.2l1.6 1.6M18.8 5.2l-1.6 1.6M6.8 17.2l-1.6 1.6"/>',
 }
 
 

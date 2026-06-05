@@ -8,7 +8,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-a855f7?style=flat-square)](LICENSE)
 ![Python](https://img.shields.io/badge/Python-3.11%2B-8b5cf6?style=flat-square&logo=python&logoColor=white)
 ![Attack modules](https://img.shields.io/badge/attack%20modules-21-f43f5e?style=flat-square)
-![Guardrails](https://img.shields.io/badge/guardrails-13-3b82f6?style=flat-square)
+![Guardrails](https://img.shields.io/badge/guardrails-16-3b82f6?style=flat-square)
 ![OWASP LLM Top 10](https://img.shields.io/badge/OWASP%20LLM%20Top%2010-mapped-c084fc?style=flat-square)
 
 Connect any LLM — local **Ollama** or cloud **Claude / GPT / Gemini** — to MCP servers,

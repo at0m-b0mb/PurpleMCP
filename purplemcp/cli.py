@@ -391,6 +391,32 @@ def bench(
 
 
 @app.command()
+def doctor() -> None:
+    """Check your setup: Python, LLM providers, Ollama, the GUI, and the lab."""
+    from .environment import all_ok, gather, stats
+
+    table = Table(title="PurpleMCP doctor")
+    table.add_column("check", style="bold")
+    table.add_column("status")
+    table.add_column("detail")
+    for c in gather():
+        mark = "[green]✓[/green]" if c.ok else "[red]✗[/red]"
+        detail = c.detail + (f"  [dim]→ {c.hint}[/dim]" if c.hint else "")
+        table.add_row(c.name, mark, detail)
+    console.print(table)
+
+    s = stats()
+    console.print(
+        f"[dim]lab contents:[/dim] {s['attack_modules']} attack modules · "
+        f"{s['hardened_twins']} hardened twins · {s['guardrails']} guardrails"
+    )
+    if all_ok():
+        console.print("[green]✓ Ready.[/green]  Try:  purplemcp gui")
+    else:
+        console.print("[yellow]Some checks need attention — see the hints above.[/yellow]")
+
+
+@app.command()
 def gui() -> None:
     """Launch the PurpleMCP desktop app (needs the optional 'gui' extra)."""
     try:
