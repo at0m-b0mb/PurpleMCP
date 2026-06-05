@@ -6,6 +6,7 @@
 
 [![CI](https://github.com/at0m-b0mb/PurpleMCP/actions/workflows/ci.yml/badge.svg)](https://github.com/at0m-b0mb/PurpleMCP/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-a855f7?style=flat-square)](LICENSE)
+[![Version](https://img.shields.io/badge/version-0.5.0-8b5cf6?style=flat-square)](CHANGELOG.md)
 ![Python](https://img.shields.io/badge/Python-3.11%2B-8b5cf6?style=flat-square&logo=python&logoColor=white)
 ![Attack modules](https://img.shields.io/badge/attack%20modules-21-f43f5e?style=flat-square)
 ![Guardrails](https://img.shields.io/badge/guardrails-16-3b82f6?style=flat-square)

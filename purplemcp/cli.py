@@ -20,6 +20,7 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
+from . import __version__
 from .config import (
     ServerSpec,
     default_provider_name,
@@ -39,6 +40,26 @@ app = typer.Typer(
 )
 console = Console()
 err = Console(stderr=True)
+
+
+def _version_callback(value: bool) -> None:
+    if value:
+        console.print(f"PurpleMCP {__version__}")
+        raise typer.Exit()
+
+
+@app.callback()
+def _main(
+    version: bool = typer.Option(
+        False,
+        "--version",
+        "-V",
+        help="Show the version and exit.",
+        callback=_version_callback,
+        is_eager=True,
+    ),
+) -> None:
+    """PurpleMCP — build, attack, and defend MCP servers with local + cloud LLMs."""
 
 
 # --------------------------------------------------------------------------- #

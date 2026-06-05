@@ -30,6 +30,7 @@ DOCS = [
     ("Ethics", REPO_ROOT / "ETHICS.md"),
     ("Contributing", REPO_ROOT / "CONTRIBUTING.md"),
     ("Security policy", REPO_ROOT / "SECURITY.md"),
+    ("Changelog", REPO_ROOT / "CHANGELOG.md"),
 ]
 
 _LIST_QSS = f"""
