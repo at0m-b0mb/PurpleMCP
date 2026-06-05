@@ -303,6 +303,9 @@ PurpleMCP is built to be a reproducible research artifact, not just a demo:
   (15/15 cases fixed by the hardened twins).
 - **SARIF output** — `purplemcp scan <path> --format sarif` emits SARIF 2.1.0 for
   GitHub code scanning / any SAST UI.
+- **Posture report** — `purplemcp report` stitches the taxonomy, a static scan of
+  the lab's own code, and the guardrail inventory into one Markdown artifact
+  ([docs/SECURITY-REPORT.md](docs/SECURITY-REPORT.md)).
 - **CI** — [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs the test
   suite + benchmark on 3.11/3.12 and uploads the scan as SARIF on every push.
 - **Citable** — see [`CITATION.cff`](CITATION.cff) and the full write-up in

@@ -414,6 +414,23 @@ def taxonomy() -> None:
 
 
 @app.command()
+def report(
+    output: Optional[str] = typer.Option(None, "--output", "-o", help="Write Markdown to a file (else print)."),
+) -> None:
+    """Generate a reproducible security-posture report for the lab (Markdown)."""
+    from .report import build_report
+
+    md = build_report()
+    if output:
+        from pathlib import Path
+
+        Path(output).write_text(md, encoding="utf-8")
+        console.print(f"[green]wrote[/green] {output}")
+    else:
+        console.print(md)
+
+
+@app.command()
 def doctor() -> None:
     """Check your setup: Python, LLM providers, Ollama, the GUI, and the lab."""
     from .environment import all_ok, gather, stats

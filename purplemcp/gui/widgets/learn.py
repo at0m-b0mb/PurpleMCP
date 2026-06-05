@@ -26,6 +26,7 @@ DOCS = [
     ("06 · Desktop GUI", REPO_ROOT / "docs" / "06-gui.md"),
     ("07 · Research methodology", REPO_ROOT / "docs" / "07-research-methodology.md"),
     ("Threat taxonomy", REPO_ROOT / "docs" / "TAXONOMY.md"),
+    ("Security report", REPO_ROOT / "docs" / "SECURITY-REPORT.md"),
     ("Ethics", REPO_ROOT / "ETHICS.md"),
 ]
 
