@@ -34,6 +34,9 @@ NAV_GROUPS = [
         ("defense", "Defense Lab", "lock"),
         ("scanner", "Security Scanner", "scanner"),
     ]),
+    ("RESEARCH", [
+        ("research", "Research", "chart"),
+    ]),
 ]
 
 # Flattened (page key, label, icon) in display order — used by the app to build pages.
@@ -139,7 +142,7 @@ class NavSidebar(QWidget):
         foot.addStretch(1)
         layout.addLayout(foot)
 
-        ver = QLabel("v0.3 · purple-team")
+        ver = QLabel("v0.4 · purple-team")
         ver.setObjectName("Faint")
         ver.setStyleSheet(f"color: {PALETTE['text_faint']}; font-size: 10px;")
         layout.addWidget(ver)

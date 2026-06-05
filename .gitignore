@@ -36,6 +36,11 @@ attacks/_lab/sink_data/
 sandbox/
 *.log
 
+# ---- Benchmark output (keep the committed reference run + README) ----
+results/bench-*.json
+results/bench-*.md
+purplemcp.sarif
+
 # ---- OS / editor noise ----
 .DS_Store
 .idea/

@@ -291,21 +291,103 @@ def install(
 def scan(
     path: Optional[str] = typer.Argument(None, help="Path to an MCP server .py file or dir."),
     server: Optional[str] = typer.Option(None, "--server", "-s", help="Scan a live server's tools."),
+    fmt: str = typer.Option("text", "--format", "-f", help="text | json | sarif"),
+    output: Optional[str] = typer.Option(None, "--output", "-o", help="Write the report to a file."),
 ) -> None:
-    """Run the MCP security scanner (static on a file, or dynamic on a server)."""
-    from .scanner import print_report, scan_path, scan_server  # lazy import
+    """Run the MCP security scanner (static on a file, or dynamic on a server).
+
+    ``--format sarif`` emits SARIF 2.1.0 for GitHub code scanning / other SAST UIs.
+    """
+    from .scanner import print_report, scan_path, scan_server, to_json, to_sarif  # lazy
 
     if server:
-        specs = _resolve_specs([server])
-        findings = asyncio.run(scan_server(specs[0]))
-        print_report(findings, console)
-        return
-    if path:
+        findings = asyncio.run(scan_server(_resolve_specs([server])[0]))
+    elif path:
         findings = scan_path(path)
+    else:
+        err.print("[red]Provide a path to scan, or --server NAME.[/red]")
+        raise typer.Exit(2)
+
+    if fmt == "text" and not output:
         print_report(findings, console)
         return
-    err.print("[red]Provide a path to scan, or --server NAME.[/red]")
-    raise typer.Exit(2)
+
+    rendered = {"json": to_json, "sarif": to_sarif}.get(fmt)
+    if rendered is None and fmt != "text":
+        err.print(f"[red]Unknown --format '{fmt}'.[/red] Use text, json, or sarif.")
+        raise typer.Exit(2)
+    text = to_json(findings) if fmt == "text" else rendered(findings)
+    if output:
+        from pathlib import Path
+
+        Path(output).write_text(text, encoding="utf-8")
+        console.print(f"[green]wrote {fmt} report to[/green] {output}")
+    else:
+        print(text)
+
+
+@app.command()
+def bench(
+    provider: Optional[str] = typer.Option(
+        None, "--provider", "-p", help="Also run the model-susceptibility eval with this provider."
+    ),
+    model: Optional[str] = typer.Option(None, "--model", "-m"),
+    out: str = typer.Option("results", "--out", help="Directory for the JSON + Markdown reports."),
+    save: bool = typer.Option(True, "--save/--no-save", help="Write JSON + Markdown reports."),
+) -> None:
+    """Run PurpleMCP-Bench: guardrail effectiveness (+ optional model susceptibility)."""
+    from pathlib import Path
+
+    from .benchmark import run_guardrail_benchmark, run_model_benchmark, write_reports
+
+    ensure_sandbox()
+    console.print("[bold]PurpleMCP-Bench[/bold] — guardrail effectiveness\n")
+    report = _run_async(
+        run_guardrail_benchmark(
+            on_case=lambda i, n, title: console.print(f"[dim]  [{i}/{n}] {title}[/dim]")
+        )
+    )
+
+    table = Table(title="Guardrail effectiveness")
+    for col in ("#", "attack", "OWASP-LLM", "vulnerable", "hardened", "fixed"):
+        table.add_column(col)
+    for c in report.cases:
+        vuln = f"[red]{c.vulnerable_verdict}[/red]" if c.exploited_vulnerable else c.vulnerable_verdict
+        hard = f"[green]{c.hardened_verdict}[/green]" if c.blocked_hardened else f"[yellow]{c.hardened_verdict}[/yellow]"
+        table.add_row(c.num, c.title, c.owasp_llm.split(" ", 1)[0], vuln, hard, "✅" if c.correct else "⚠️")
+    console.print(table)
+    console.print(
+        f"[bold]effectiveness:[/bold] {report.n_correct}/{report.n_cases} "
+        f"([green]{report.effectiveness_pct}%[/green]) blocked by the hardened twin"
+    )
+
+    if provider:
+        providers = load_providers()
+        if provider not in providers:
+            err.print(f"[red]Unknown provider '{provider}'.[/red] One of: {', '.join(providers)}")
+            raise typer.Exit(2)
+        cfg = providers[provider]
+        if model:
+            cfg = cfg.model_copy(update={"model": model})
+        if not cfg.ready:
+            err.print(f"[red]Provider '{provider}' is not ready.[/red] Set its API key in .env.")
+            raise typer.Exit(2)
+        console.print(
+            f"\n[bold]Model susceptibility[/bold] — {provider}/{cfg.model} "
+            "[dim](experimental; results vary by model/run)[/dim]"
+        )
+        model_results = _run_async(run_model_benchmark(cfg))
+        report.model_provider, report.model_name, report.model_results = provider, cfg.model, model_results
+        for m in model_results:
+            if m.manipulated is None:
+                console.print(f"  [dim]{m.title}: error — {m.error}[/dim]")
+            else:
+                tag = "[red]manipulated[/red]" if m.manipulated else "[green]resisted[/green]"
+                console.print(f"  {m.title}: {tag}  [dim]tools={m.tools_called or '—'}[/dim]")
+
+    if save:
+        json_path, md_path = write_reports(report, Path(out))
+        console.print(f"\n[green]wrote[/green] {json_path}\n[green]wrote[/green] {md_path}")
 
 
 @app.command()

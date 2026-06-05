@@ -17,6 +17,7 @@ tool. The point is to *see* the risks before you trust a server.
 from __future__ import annotations
 
 import ast
+import json
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -240,3 +241,71 @@ def print_report(findings: list[Finding], console) -> None:
 
     summary = "  ".join(f"{sev}={counts.get(sev, 0)}" for sev in ("HIGH", "MEDIUM", "LOW", "INFO"))
     console.print(f"[bold]summary:[/bold] {summary}")
+
+
+# --------------------------------------------------------------------------- #
+#  machine-readable output (JSON + SARIF for CI / code scanning)
+# --------------------------------------------------------------------------- #
+def to_json(findings: list[Finding]) -> str:
+    """Findings as a plain JSON array."""
+    return json.dumps(
+        [
+            {"severity": f.severity, "rule": f.rule, "location": f.location, "message": f.message}
+            for f in findings
+        ],
+        indent=2,
+    )
+
+
+# SARIF severity levels: error/warning/note.
+_SARIF_LEVEL = {"HIGH": "error", "MEDIUM": "warning", "LOW": "note", "INFO": "note"}
+
+
+def to_sarif(findings: list[Finding]) -> str:
+    """Findings as SARIF 2.1.0 — drop-in for GitHub code scanning / other SAST UIs."""
+    try:
+        from importlib.metadata import version as _v
+
+        tool_version = _v("purplemcp")
+    except Exception:  # noqa: BLE001
+        tool_version = "0.0.0"
+
+    rules: dict[str, dict] = {}
+    results: list[dict] = []
+    for f in findings:
+        rules.setdefault(
+            f.rule,
+            {"id": f.rule, "name": f.rule, "shortDescription": {"text": f.rule}},
+        )
+        path, _, line = f.location.partition(":")
+        phys: dict = {"artifactLocation": {"uri": path}}
+        if line.isdigit():
+            phys["region"] = {"startLine": int(line)}
+        results.append(
+            {
+                "ruleId": f.rule,
+                "level": _SARIF_LEVEL.get(f.severity, "warning"),
+                "message": {"text": f.message},
+                "locations": [{"physicalLocation": phys}],
+                "properties": {"severity": f.severity},
+            }
+        )
+
+    sarif = {
+        "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+        "version": "2.1.0",
+        "runs": [
+            {
+                "tool": {
+                    "driver": {
+                        "name": "purplemcp-scanner",
+                        "informationUri": "https://github.com/at0m-b0mb/PurpleMCP",
+                        "version": tool_version,
+                        "rules": list(rules.values()),
+                    }
+                },
+                "results": results,
+            }
+        ],
+    }
+    return json.dumps(sarif, indent=2)

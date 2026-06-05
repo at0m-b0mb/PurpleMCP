@@ -23,6 +23,7 @@ from .widgets.dashboard import DashboardPage
 from .widgets.defense import DefenseLabPage
 from .widgets.explorer import ToolExplorerPage
 from .widgets.models import ModelsPage
+from .widgets.research import ResearchPage
 from .widgets.scanner import ScannerPage
 from .widgets.servers import ServersPage
 from .widgets.sidebar import NAV_ITEMS, NavSidebar
@@ -71,6 +72,7 @@ class MainWindow(QMainWindow):
             "attacks": AttackLabPage(loop, self._lab),
             "defense": DefenseLabPage(loop, self._lab),
             "scanner": ScannerPage(loop),
+            "research": ResearchPage(loop),
         }
         self._keys = [key for key, _, _ in NAV_ITEMS]
         for key in self._keys:

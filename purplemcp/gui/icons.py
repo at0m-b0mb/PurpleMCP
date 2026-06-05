@@ -47,6 +47,9 @@ _ICONS: dict[str, str] = {
     "bolt":      '<path d="M13 2 4 14h7l-1 8 9-12h-7z" stroke-linejoin="round"/>',
     "skull":     '<path d="M12 3a8 8 0 0 0-5 14v2a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-2a8 8 0 0 0-5-14z" stroke-linejoin="round"/>'
                  '<circle cx="9" cy="12" r="1.4"/><circle cx="15" cy="12" r="1.4"/>',
+    "chart":     '<path d="M3 21h18"/><rect x="5" y="11" width="3.2" height="7" rx="1"/>'
+                 '<rect x="10.4" y="6" width="3.2" height="12" rx="1"/>'
+                 '<rect x="15.8" y="9" width="3.2" height="9" rx="1"/>',
 }
 
 

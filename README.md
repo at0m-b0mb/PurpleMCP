@@ -244,6 +244,32 @@ Checklist: [defense/checklist.md](defense/checklist.md).
 
 ---
 
+## 🔬 Research
+
+PurpleMCP is built to be a reproducible research artifact, not just a demo:
+
+- **Threat taxonomy** — every module is mapped to **OWASP Top 10 for LLM Apps
+  (2025)**, **CWE**, and **MITRE ATLAS** in [`purplemcp/taxonomy.py`](purplemcp/taxonomy.py).
+- **PurpleMCP-Bench** — `purplemcp bench` measures **guardrail effectiveness**
+  (deterministic: attack vs vulnerable vs hardened twin) and, optionally,
+  **model susceptibility** (`--provider`), writing JSON + Markdown to `results/`.
+  A committed reference run is in [`results/guardrail-benchmark.md`](results/guardrail-benchmark.md)
+  (15/15 cases fixed by the hardened twins).
+- **SARIF output** — `purplemcp scan <path> --format sarif` emits SARIF 2.1.0 for
+  GitHub code scanning / any SAST UI.
+- **CI** — [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs the test
+  suite + benchmark on 3.11/3.12 and uploads the scan as SARIF on every push.
+- **Citable** — see [`CITATION.cff`](CITATION.cff) and the full write-up in
+  [docs/07-research-methodology.md](docs/07-research-methodology.md).
+
+```bash
+purplemcp bench                              # deterministic guardrail benchmark
+purplemcp bench --provider ollama -m llama3.1  # + model-susceptibility probe
+purplemcp scan attacks --format sarif -o purplemcp.sarif
+```
+
+---
+
 ## Suggested learning path
 
 1. **[docs/01-what-is-mcp.md](docs/01-what-is-mcp.md)** — the protocol, concretely.
