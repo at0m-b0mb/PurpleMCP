@@ -98,6 +98,37 @@ def test_gui_constructs_headless():
     assert app is not None
 
 
+def test_filter_grouped_list_hides_nonmatches():
+    pytest.importorskip("PySide6")
+    os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+    from types import SimpleNamespace
+
+    from PySide6.QtCore import Qt
+    from PySide6.QtWidgets import QApplication, QListWidget, QListWidgetItem
+
+    from purplemcp.gui.widgets.common import filter_grouped_list
+
+    app = QApplication.instance() or QApplication([])
+    assert app is not None
+    lw = QListWidget()
+    header = QListWidgetItem("CLASSIC")
+    header.setFlags(Qt.NoItemFlags)
+    lw.addItem(header)
+    sql = QListWidgetItem(lw)
+    sql.setData(Qt.UserRole, SimpleNamespace(num="10", title="SQL Injection", family="x", threat="dump rows", guardrail="sqlsafe"))
+    cmd = QListWidgetItem(lw)
+    cmd.setData(Qt.UserRole, SimpleNamespace(num="03", title="Command Injection", family="x", threat="shell", guardrail="exec"))
+
+    filter_grouped_list(lw, "sql")
+    assert not sql.isHidden() and cmd.isHidden() and not header.isHidden()
+
+    filter_grouped_list(lw, "")  # cleared -> everything visible
+    assert not sql.isHidden() and not cmd.isHidden() and not header.isHidden()
+
+    filter_grouped_list(lw, "zzzz")  # no matches -> the empty group header hides too
+    assert sql.isHidden() and cmd.isHidden() and header.isHidden()
+
+
 def test_window_persists_last_page(tmp_path):
     pytest.importorskip("PySide6")
     os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")

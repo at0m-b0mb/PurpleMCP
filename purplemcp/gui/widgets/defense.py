@@ -29,10 +29,12 @@ from .common import (
     Card,
     button,
     clear_layout,
+    filter_grouped_list,
     flash,
     make_scroll,
     muted,
     page_header,
+    search_box,
     title_label,
 )
 from .highlight import PythonHighlighter
@@ -125,6 +127,7 @@ class DefenseLabPage(QWidget):
         lay.setContentsMargins(0, 0, 0, 0)
         lay.setSpacing(8)
         lay.addWidget(title_label("Defenses"))
+        lay.addWidget(search_box("Filter defenses…", lambda t: filter_grouped_list(self._list, t)))
         self._list = QListWidget()
         self._list.setStyleSheet(_LIST_QSS)
         self._list.itemSelectionChanged.connect(self._on_select)

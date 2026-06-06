@@ -28,10 +28,12 @@ from .common import (
     Card,
     button,
     clear_layout,
+    filter_grouped_list,
     flash,
     make_scroll,
     muted,
     page_header,
+    search_box,
     severity_pill,
     title_label,
 )
@@ -123,6 +125,7 @@ class AttackLabPage(QWidget):
         lay.setContentsMargins(0, 0, 0, 0)
         lay.setSpacing(8)
         lay.addWidget(title_label("Attacks"))
+        lay.addWidget(search_box("Filter attacks…", lambda t: filter_grouped_list(self._list, t)))
         self._list = QListWidget()
         self._list.setStyleSheet(_LIST_QSS)
         self._list.itemSelectionChanged.connect(self._on_select)

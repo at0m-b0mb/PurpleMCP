@@ -216,6 +216,56 @@ def make_scroll(inner: QWidget) -> QScrollArea:
     return area
 
 
+def search_box(placeholder: str, on_change):
+    """A clearable search field wired to ``on_change(text)``."""
+    from PySide6.QtWidgets import QLineEdit
+
+    box = QLineEdit()
+    box.setPlaceholderText(placeholder)
+    box.setClearButtonEnabled(True)
+    box.textChanged.connect(on_change)
+    return box
+
+
+def filter_grouped_list(list_widget, text: str) -> None:
+    """Show/hide rows of a grouped ``QListWidget`` by a query.
+
+    Module rows carry an object with ``num/title/family/threat/guardrail`` in
+    ``Qt.UserRole``; header rows (``UserRole`` is ``None``) are hidden when their
+    whole group is filtered out.
+    """
+    from PySide6.QtCore import Qt
+
+    query = text.strip().lower()
+    header = None
+    header_has_match = False
+    for i in range(list_widget.count()):
+        item = list_widget.item(i)
+        meta = item.data(Qt.UserRole)
+        if meta is None:  # group header
+            if header is not None:
+                header.setHidden(not header_has_match)
+            header = item
+            header_has_match = False
+            continue
+        hay = " ".join(
+            str(x)
+            for x in (
+                getattr(meta, "num", ""),
+                getattr(meta, "title", ""),
+                getattr(meta, "family", ""),
+                getattr(meta, "threat", ""),
+                getattr(meta, "guardrail", "") or "",
+            )
+        ).lower()
+        match = (not query) or (query in hay)
+        item.setHidden(not match)
+        if match:
+            header_has_match = True
+    if header is not None:
+        header.setHidden(not header_has_match)
+
+
 def clear_layout(layout) -> None:
     """Remove and free every item in a layout, hiding widgets immediately.
 
