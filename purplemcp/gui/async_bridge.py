@@ -35,6 +35,7 @@ class AsyncLoop:
 
     def __init__(self) -> None:
         self._loop = asyncio.new_event_loop()
+        self._closed = False
         self._thread = threading.Thread(
             target=self._run, name="purplemcp-async", daemon=True
         )
@@ -56,7 +57,24 @@ class AsyncLoop:
         """Run ``fn(*args)`` on the loop thread (thread-safe)."""
         self._loop.call_soon_threadsafe(fn, *args)
 
+    async def _drain(self) -> None:
+        tasks = [t for t in asyncio.all_tasks(self._loop) if t is not asyncio.current_task()]
+        for task in tasks:
+            task.cancel()
+        if tasks:
+            await asyncio.gather(*tasks, return_exceptions=True)
+
     def shutdown(self) -> None:
+        """Cancel in-flight jobs, then stop the loop — a tidy close with no
+        'Task was destroyed but it is pending' noise. Best-effort and bounded so
+        closing the app can never hang. Idempotent — safe to call more than once."""
+        if self._closed:
+            return
+        self._closed = True
+        try:
+            asyncio.run_coroutine_threadsafe(self._drain(), self._loop).result(timeout=2.0)
+        except Exception:  # noqa: BLE001 - never block shutdown on a stubborn task
+            pass
         self._loop.call_soon_threadsafe(self._loop.stop)
 
 

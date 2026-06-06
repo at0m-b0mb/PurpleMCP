@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import sys
 
+from PySide6.QtCore import QSettings
 from PySide6.QtGui import QFontDatabase, QKeySequence, QShortcut
 from PySide6.QtWidgets import (
     QApplication,
@@ -39,6 +40,8 @@ class MainWindow(QMainWindow):
     def __init__(self, loop: AsyncLoop) -> None:
         super().__init__()
         self._loop = loop
+        self._settings = QSettings("PurpleMCP", "PurpleMCP")
+        self._current_key = "dashboard"
         self.setWindowTitle("PurpleMCP — Security Console")
         self.resize(1200, 780)
         self.setMinimumSize(1000, 660)
@@ -89,8 +92,15 @@ class MainWindow(QMainWindow):
         for key in self._keys:
             self._stack.addWidget(self._pages[key])
 
-        self._sidebar.select("dashboard")
-        self._go("dashboard")
+        # restore window size + last-open page from the previous session
+        geometry = self._settings.value("geometry")
+        if geometry is not None:
+            self.restoreGeometry(geometry)
+        start = self._settings.value("page", "dashboard")
+        if start not in self._pages:
+            start = "dashboard"
+        self._sidebar.select(start)
+        self._go(start)
 
         # bottom status bar (lab state · async activity · provider · version)
         self._content_layout.addWidget(StatusBar(self._lab))
@@ -114,6 +124,7 @@ class MainWindow(QMainWindow):
     def _go(self, key: str) -> None:
         if key not in self._pages:
             return
+        self._current_key = key
         self._stack.setCurrentWidget(self._pages[key])
         if key == "dashboard":
             self._dashboard.refresh()
@@ -146,6 +157,8 @@ class MainWindow(QMainWindow):
         self._about_dialog.show_centered()
 
     def closeEvent(self, event) -> None:  # noqa: N802 - Qt override
+        self._settings.setValue("geometry", self.saveGeometry())
+        self._settings.setValue("page", self._current_key)
         self._chat.shutdown()
         self._loop.shutdown()
         super().closeEvent(event)

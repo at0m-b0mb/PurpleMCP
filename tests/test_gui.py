@@ -96,3 +96,35 @@ def test_gui_constructs_headless():
     finally:
         loop.shutdown()
     assert app is not None
+
+
+def test_window_persists_last_page(tmp_path):
+    pytest.importorskip("PySide6")
+    os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+    from PySide6.QtCore import QSettings
+    from PySide6.QtGui import QCloseEvent
+    from PySide6.QtWidgets import QApplication
+
+    from purplemcp.gui.app import MainWindow
+    from purplemcp.gui.async_bridge import AsyncLoop
+
+    # isolate QSettings to a temp dir so the test never touches the real store
+    QSettings.setPath(QSettings.IniFormat, QSettings.UserScope, str(tmp_path))
+    QSettings.setDefaultFormat(QSettings.IniFormat)
+
+    app = QApplication.instance() or QApplication([])
+    assert app is not None
+    loop = AsyncLoop()
+    try:
+        window = MainWindow(loop)
+        window._go("scanner")
+        window.closeEvent(QCloseEvent())  # persists geometry + page
+    finally:
+        loop.shutdown()
+
+    loop2 = AsyncLoop()
+    try:
+        restored = MainWindow(loop2)
+        assert restored._current_key == "scanner"  # picked up where we left off
+    finally:
+        loop2.shutdown()
