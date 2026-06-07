@@ -46,3 +46,6 @@ purplemcp.sarif
 .idea/
 .vscode/
 *.swp
+
+# ---- Claude Code / harness runtime artifacts ----
+.claude/
