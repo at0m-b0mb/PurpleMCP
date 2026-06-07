@@ -17,6 +17,7 @@ from ..theme import MONO, PALETTE
 from .common import make_scroll, page_header  # noqa: F401 (page_header used)
 
 DOCS = [
+    ("★ MCP Security Handbook", REPO_ROOT / "docs" / "MCP-SECURITY-GUIDE.md"),
     ("Overview (README)", REPO_ROOT / "README.md"),
     ("01 · What is MCP", REPO_ROOT / "docs" / "01-what-is-mcp.md"),
     ("02 · Architecture", REPO_ROOT / "docs" / "02-architecture.md"),

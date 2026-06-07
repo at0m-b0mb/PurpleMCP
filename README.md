@@ -40,6 +40,11 @@ real tools. It does three things, and the third is what makes it *purple*
 
 ---
 
+> [!TIP]
+> **New to MCP security? Start here →** **[The MCP Security Handbook](docs/MCP-SECURITY-GUIDE.md)**
+> — a complete, in-depth guide to the protocol, the 21 attack classes, and the 16
+> guardrails that stop them. (Also readable in-app via the **Learn** page.)
+
 ## What is MCP, in one paragraph?
 
 The **Model Context Protocol** is an open standard (think "USB-C for AI tools").
