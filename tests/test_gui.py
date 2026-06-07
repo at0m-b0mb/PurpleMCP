@@ -129,6 +129,37 @@ def test_filter_grouped_list_hides_nonmatches():
     assert sql.isHidden() and cmd.isHidden() and header.isHidden()
 
 
+def test_scanner_export_writes_findings(tmp_path, monkeypatch):
+    pytest.importorskip("PySide6")
+    os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+    import json
+
+    from PySide6.QtWidgets import QApplication, QFileDialog
+
+    from purplemcp.gui.async_bridge import AsyncLoop
+    from purplemcp.gui.widgets.scanner import ScannerPage
+    from purplemcp.scanner import Finding
+
+    app = QApplication.instance() or QApplication([])
+    assert app is not None
+    page = ScannerPage(AsyncLoop())
+    assert not page._export_btn.isEnabled()  # nothing to export yet
+
+    findings = [Finding("HIGH", "command-injection", "x.py:1", "shell=True")]
+    page._on_findings(findings)
+    assert page._export_btn.isEnabled()
+    assert page._findings == findings
+
+    out = tmp_path / "scan.json"
+    monkeypatch.setattr(
+        QFileDialog, "getSaveFileName", lambda *a, **k: (str(out), "JSON (*.json)")
+    )
+    page._export()
+    assert out.exists()
+    data = json.loads(out.read_text(encoding="utf-8"))
+    assert data and data[0]["rule"] == "command-injection"
+
+
 def test_window_persists_last_page(tmp_path):
     pytest.importorskip("PySide6")
     os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")

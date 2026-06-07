@@ -113,6 +113,7 @@ class ScannerPage(QWidget):
         super().__init__(parent)
         self._loop = loop
         self._job = None
+        self._findings: list = []
 
         inner = QWidget()
         root = QVBoxLayout(inner)
@@ -185,6 +186,11 @@ class ScannerPage(QWidget):
         self._status = muted("", faint=True)
         run_row.addWidget(self._status)
         run_row.addStretch(1)
+        self._export_btn = button("Export…", "ghost", "folder")
+        self._export_btn.setEnabled(False)
+        self._export_btn.setToolTip("Run a scan first")
+        self._export_btn.clicked.connect(self._export)
+        run_row.addWidget(self._export_btn)
         target.body.addLayout(run_row)
         root.addWidget(target)
         self._busy = BusyBar()
@@ -246,6 +252,9 @@ class ScannerPage(QWidget):
     def _on_findings(self, findings: list) -> None:
         self._busy.stop()
         self._scan_btn.setEnabled(True)
+        self._findings = findings
+        self._export_btn.setEnabled(bool(findings))
+        self._export_btn.setToolTip("" if findings else "Run a scan first")
         flash(self._status, f"✓ {len(findings)} finding(s)", PALETTE["green"])
 
         counts = {s: 0 for s in _SEV_ORDER}
@@ -275,6 +284,31 @@ class ScannerPage(QWidget):
         ordered = sorted(findings, key=lambda f: (_SEV_ORDER.index(f.severity) if f.severity in _SEV_ORDER else 9, f.location))
         for f in ordered:
             self._findings_box.addWidget(FindingCard(f))
+
+    # -- export ----------------------------------------------------------- #
+    def _export(self) -> None:
+        if not self._findings:
+            return
+        path, selected = QFileDialog.getSaveFileName(
+            self,
+            "Export scan findings",
+            str(REPO_ROOT / "purplemcp-scan.sarif"),
+            "SARIF 2.1.0 (*.sarif);;JSON (*.json)",
+        )
+        if not path:
+            return
+        from pathlib import Path
+
+        from ...scanner import to_json, to_sarif
+
+        as_json = path.endswith(".json") or selected.startswith("JSON")
+        text = to_json(self._findings) if as_json else to_sarif(self._findings)
+        try:
+            Path(path).write_text(text, encoding="utf-8")
+        except OSError as exc:
+            flash(self._status, f"export failed: {exc}", PALETTE["red"], ms=5000)
+            return
+        flash(self._status, f"✓ exported {Path(path).name}", PALETTE["green"])
 
 
 def _mode_button(text: str, checked: bool) -> QPushButton:
