@@ -148,6 +148,10 @@ class TerminalCard(Card):
         self._lab = lab
         self._job = None
 
+        # a small "real terminal" cue in the header: traffic lights + live pill
+        self.add_header_widget(_traffic_lights())
+        self.add_header_widget(Badge("live", PALETTE["green"]))
+
         # suggested commands
         if commands:
             for label, command in commands:
@@ -266,6 +270,19 @@ class TerminalCard(Card):
         self._input.setText(command)
 
 
-def terminal_hint_badge() -> Badge:
-    """A small 'live' pill for terminal headers."""
-    return Badge("live", PALETTE["green"])
+def _dot(color: str) -> QLabel:
+    d = QLabel()
+    d.setFixedSize(11, 11)
+    d.setStyleSheet(f"background: {color}; border-radius: 5px;")
+    return d
+
+
+def _traffic_lights() -> QWidget:
+    """Three macOS-style window dots — a subtle 'this is a terminal' cue."""
+    box = QWidget()
+    lay = QHBoxLayout(box)
+    lay.setContentsMargins(0, 0, 4, 0)
+    lay.setSpacing(6)
+    for color in (PALETTE["red"], PALETTE["amber"], PALETTE["green"]):
+        lay.addWidget(_dot(color))
+    return box

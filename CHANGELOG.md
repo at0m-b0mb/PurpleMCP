@@ -28,6 +28,17 @@ All notable changes to PurpleMCP. This project adheres loosely to
   updated to match.
 - Screenshots are regenerated with the labs and chat **driven live**, so they show
   real exploit output, a real exploited→blocked verify, and real MCP tool calls.
+- **UI polish:** cards now have subtle vertical-gradient depth, the selected nav
+  item gets a purple left-accent bar, headings use tighter letter-spacing, buttons
+  gained pressed states, and the dashboard hero carries the shield logo mark. Every
+  page header now leads with a brand accent bar, and the manual terminal sports
+  macOS-style traffic-light dots and a "live" pill for a true terminal feel.
+- **Sharper banner** — redesigned (soft node halos, dual glow, vignette) and
+  rendered at 3× (3840×1200) for crisp display; the README shows it full-width.
+
+### Fixed
+- `tests/test_terminal.py` collection no longer requires PySide6: `gui/ops.py`'s
+  `Job` import moved under `TYPE_CHECKING`, so CI's GUI-less `.[dev]` install passes.
 
 ## [0.5.0]
 

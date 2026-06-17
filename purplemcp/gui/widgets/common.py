@@ -190,19 +190,36 @@ class BusyBar(QProgressBar):
 #  misc
 # --------------------------------------------------------------------------- #
 def page_header(title: str, subtitle: str = "") -> QWidget:
-    """A standard page header: big title with an optional subtitle beneath."""
+    """A page header: a brand accent bar beside a big title + optional subtitle."""
     box = QWidget()
-    lay = QVBoxLayout(box)
-    lay.setContentsMargins(0, 0, 0, 0)
-    lay.setSpacing(3)
+    row = QHBoxLayout(box)
+    row.setContentsMargins(0, 0, 0, 0)
+    row.setSpacing(13)
+
+    accent = QFrame()
+    accent.setFixedWidth(4)
+    accent.setMinimumHeight(34)
+    accent.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
+    accent.setStyleSheet(
+        "border: none; border-radius: 2px;"
+        f" background: qlineargradient(x1:0, y1:0, x2:0, y2:1,"
+        f"   stop:0 {PALETTE['violet']}, stop:1 {PALETTE['purple']});"
+    )
+    row.addWidget(accent)
+
+    col = QVBoxLayout()
+    col.setContentsMargins(0, 0, 0, 0)
+    col.setSpacing(3)
     t = QLabel(title)
     t.setObjectName("PageTitle")
-    lay.addWidget(t)
+    col.addWidget(t)
     if subtitle:
         s = QLabel(subtitle)
         s.setObjectName("PageSub")
         s.setWordWrap(True)
-        lay.addWidget(s)
+        col.addWidget(s)
+    row.addLayout(col)
+    row.addStretch(1)
     return box
 
 
