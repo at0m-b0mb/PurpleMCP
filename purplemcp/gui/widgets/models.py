@@ -37,7 +37,9 @@ ENV_VARS = {
     "gemini": "GEMINI_API_KEY",
     "openrouter": "OPENROUTER_API_KEY",
 }
-SUGGESTED = ["llama3.1", "llama3.2", "qwen2.5", "mistral"]
+# qwen2.5 first: it's the most reliable local model at *structured* tool-calling,
+# which is what every PurpleMCP feature depends on.
+SUGGESTED = ["qwen2.5", "llama3.1", "llama3.2", "mistral"]
 TOOL_CAPABLE = ("llama3", "qwen", "mistral", "command-r", "firefunction", "hermes")
 
 

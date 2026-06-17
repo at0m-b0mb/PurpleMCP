@@ -19,7 +19,9 @@ from PySide6.QtWidgets import (
 
 from .. import ops
 from ..async_bridge import AsyncLoop, run_job
+from ..catalog import CASES_BY_ID
 from ..catalog_attacks import AttackMeta, grouped
+from ..lab_commands import attack_commands
 from ..state import LabState
 from ..theme import MONO, PALETTE, rgba
 from .common import (
@@ -37,6 +39,7 @@ from .common import (
     severity_pill,
     title_label,
 )
+from .terminal import TerminalCard
 
 _LIST_QSS = f"""
 QListWidget {{ background: {PALETTE['surface_2']}; border: 1px solid {PALETTE['border']};
@@ -197,7 +200,10 @@ class AttackLabPage(QWidget):
         self._busy = BusyBar()
         self._detail.addWidget(self._busy)
 
-        console_card = Card("Exploit output")
+        console_card = Card(
+            "1 · Live exploit output",
+            "The real exploit runs against the intentionally-vulnerable server.",
+        )
         self._console = QPlainTextEdit()
         self._console.setReadOnly(True)
         self._console.setPlaceholderText("Arm the lab, then Run exploit to see it work in real time.")
@@ -208,6 +214,31 @@ class AttackLabPage(QWidget):
         self._console.setMinimumHeight(220)
         console_card.body.addWidget(self._console)
         self._detail.addWidget(console_card)
+
+        # manual terminal: copy/run the exploit + scan commands yourself
+        self._detail.addWidget(TerminalCard(
+            self._loop,
+            title="2 · Manual terminal",
+            subtitle="Copy these into your own shell, or run them here and watch the output.",
+            commands=attack_commands(meta),
+            lab=self._lab,
+        ))
+
+        # nudge toward the blue-team side
+        if meta.arena_case_id and meta.arena_case_id in CASES_BY_ID:
+            defend = Card(flat=True)
+            row = QHBoxLayout()
+            from ..icons import icon
+
+            ic = QLabel()
+            ic.setPixmap(icon("lock", PALETTE["blue"], 15).pixmap(15, 15))
+            row.addWidget(ic)
+            row.addWidget(muted(
+                "Now defend it → open the Defense Lab (⌘8) to watch this exact payload get blocked "
+                "by its hardened twin.", faint=True,
+            ), 1)
+            defend.body.addLayout(row)
+            self._detail.addWidget(defend)
 
         writeup = Card("Writeup")
         view = QTextEdit()

@@ -5,7 +5,9 @@ so you can see the leak and the fix back to back. Requires the lab flag because
 it launches the vulnerable servers.
 
     export PURPLEMCP_LAB_ENABLED="i-understand-this-is-a-lab"
-    python defense/compare.py
+    python defense/compare.py                # every case
+    python defense/compare.py ping           # just the case whose tool/title matches
+    python defense/compare.py "sql injection"
 """
 
 import asyncio
@@ -162,8 +164,20 @@ def _show(text: str, head: int = 5, tail: int = 4) -> str:
     return "\n".join("      " + line for line in chosen)
 
 
+def _selected() -> list:
+    """Optionally filter CASES by a CLI query matching the title or tool name."""
+    query = " ".join(sys.argv[1:]).strip().lower()
+    if not query:
+        return CASES
+    hits = [c for c in CASES if query in c[0].lower() or query in c[1].lower()]
+    if not hits:
+        known = ", ".join(sorted(c[1] for c in CASES))
+        print(f"no case matches {query!r}. tools: {known}")
+    return hits
+
+
 async def main() -> None:
-    for title, tool, args, vuln, hardened in CASES:
+    for title, tool, args, vuln, hardened in _selected():
         print("=" * 72)
         print(f"  {title}  —  {tool}({args})")
         print("=" * 72)

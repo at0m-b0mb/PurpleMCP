@@ -1,6 +1,15 @@
-"""Defense Lab — the guardrail that stops each attack, its code, and live proof."""
+"""Defense Lab — explanation on the left, the defense running for real on the right.
+
+The page is split so you can read *how* a guardrail works (the threat, the
+mechanism, the step-by-step, the actual source) on the left while you *watch it
+work* on the right: a one-click Verify replays the real payload at the vulnerable
+server and its hardened twin (exploited → blocked), and a live terminal runs the
+same thing from copyable commands you can paste into your own shell.
+"""
 
 from __future__ import annotations
+
+import json
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor
@@ -19,6 +28,7 @@ from PySide6.QtWidgets import (
 from ..async_bridge import AsyncLoop, run_job
 from ..catalog import CASES_BY_ID, judge
 from ..catalog_attacks import AttackMeta, grouped
+from ..lab_commands import defense_commands
 from ..ops import arena_run
 from ..state import LabState
 from ..theme import BLUE_TEAM, MONO, PALETTE, RED_TEAM, rgba
@@ -38,6 +48,7 @@ from .common import (
     title_label,
 )
 from .highlight import PythonHighlighter
+from .terminal import TerminalCard
 
 _LIST_QSS = f"""
 QListWidget {{ background: {PALETTE['surface_2']}; border: 1px solid {PALETTE['border']};
@@ -56,22 +67,35 @@ class DefenseLabPage(QWidget):
         self._meta: AttackMeta | None = None
         self._job = None
         self._highlighter = None
+        self._verify_btn = None
 
         root = QVBoxLayout(self)
         root.setContentsMargins(32, 28, 32, 22)
         root.setSpacing(16)
         root.addWidget(
-            page_header("Defense Lab", "See the guardrail that stops each attack — and prove it")
+            page_header("Defense Lab", "Read the defense on the left — watch it protect on the right")
         )
         root.addWidget(self._build_arm_banner())
 
         split = QSplitter(Qt.Horizontal)
         split.setHandleWidth(14)
         split.addWidget(self._build_list())
-        split.addWidget(make_scroll(self._build_detail_host()))
+
+        # right of the list: a two-pane "explain | run live" stage.
+        self._stage = QSplitter(Qt.Horizontal)
+        self._stage.setHandleWidth(14)
+        self._explain_host, self._explain = _scroll_host("Select a defense to read the guardrail.")
+        self._live_host, self._live = _scroll_host("…then watch it protect, live.")
+        self._stage.addWidget(make_scroll(self._explain_host))
+        self._stage.addWidget(make_scroll(self._live_host))
+        self._stage.setStretchFactor(0, 5)
+        self._stage.setStretchFactor(1, 5)
+        self._stage.setSizes([460, 520])
+
+        split.addWidget(self._stage)
         split.setStretchFactor(0, 2)
-        split.setStretchFactor(1, 5)
-        split.setSizes([330, 620])
+        split.setStretchFactor(1, 7)
+        split.setSizes([280, 980])
         root.addWidget(split, 1)
 
         self._lab.changed.connect(self._sync_armed)
@@ -97,8 +121,9 @@ class DefenseLabPage(QWidget):
         t.setStyleSheet(f"font-weight: 800; color: {PALETTE['text']};")
         tbox.addWidget(t)
         tbox.addWidget(muted(
-            "Verifying launches the vulnerable server AND its hardened twin to show the same "
-            "payload exploited, then blocked. Arming is shared with the Attack Lab.",
+            "Verifying (and the live terminal) launch the vulnerable server AND its hardened "
+            "twin to show the same payload exploited, then blocked. Arming is shared with the "
+            "Attack Lab.",
             faint=True,
         ))
         row.addLayout(tbox, 1)
@@ -116,7 +141,7 @@ class DefenseLabPage(QWidget):
     def _sync_armed(self, armed: bool) -> None:
         if self._arm.isChecked() != armed:
             self._arm.setChecked(armed)
-        if hasattr(self, "_verify_btn") and self._verify_btn is not None:
+        if self._verify_btn is not None:
             self._verify_btn.setEnabled(armed)
             self._verify_btn.setToolTip("" if armed else "Arm the lab above to verify")
 
@@ -152,16 +177,6 @@ class DefenseLabPage(QWidget):
                 self._list.setCurrentRow(i)
                 return
 
-    # -- detail ----------------------------------------------------------- #
-    def _build_detail_host(self) -> QWidget:
-        self._detail_host = QWidget()
-        self._detail = QVBoxLayout(self._detail_host)
-        self._detail.setContentsMargins(0, 0, 0, 0)
-        self._detail.setSpacing(14)
-        self._detail.addWidget(muted("Select a defense to read the guardrail and prove it."))
-        self._detail.addStretch(1)
-        return self._detail_host
-
     def _on_select(self) -> None:
         items = self._list.selectedItems()
         if not items:
@@ -171,11 +186,13 @@ class DefenseLabPage(QWidget):
             return
         self._meta = meta
         self._verify_btn = None
-        self._build_detail(meta)
-
-    def _build_detail(self, meta: AttackMeta) -> None:
-        clear_layout(self._detail)
         case = CASES_BY_ID.get(meta.arena_case_id) if meta.arena_case_id else None
+        self._build_explain(meta, case)
+        self._build_live(meta, case)
+
+    # -- left: explanation ------------------------------------------------ #
+    def _build_explain(self, meta: AttackMeta, case) -> None:
+        clear_layout(self._explain)
 
         head = QHBoxLayout()
         head.addWidget(Badge(f"#{meta.num}", PALETTE["blue"]))
@@ -183,25 +200,44 @@ class DefenseLabPage(QWidget):
         title.setStyleSheet(f"font-size: 19px; font-weight: 800; color: {PALETTE['text']};")
         head.addWidget(title)
         head.addStretch(1)
-        self._detail.addLayout(head)
+        self._explain.addLayout(head)
 
-        # mechanism
+        threat = Card("The threat")
+        threat.body.addWidget(muted(case.threat if case else meta.threat))
+        self._explain.addWidget(threat)
+
         mech = Card("How the fix works")
         mech.body.addWidget(muted(case.explain if case else meta.threat))
         if case:
             grow = QHBoxLayout()
-            gl = QLabel()
             from ..icons import icon
 
+            gl = QLabel()
             gl.setPixmap(icon("lock", PALETTE["blue"], 15).pixmap(15, 15))
             grow.addWidget(gl)
             grow.addWidget(muted(case.guardrail, faint=True), 1)
             mech.body.addLayout(grow)
-        self._detail.addWidget(mech)
+        self._explain.addWidget(mech)
 
-        # guardrail source
+        if case:
+            steps = Card("How it protects — step by step")
+            steps.body.addWidget(_step_row(
+                "1", "Attacker input",
+                f"the model is steered into calling {case.tool}({_fmt_args(case.attack_args)})",
+                RED_TEAM,
+            ))
+            steps.body.addWidget(_step_row(
+                "2", "The guardrail intercepts", case.guardrail, PALETTE["blue"],
+            ))
+            steps.body.addWidget(_step_row(
+                "3", "Neutralized",
+                "the payload is refused or rendered inert — its success signature never appears",
+                PALETTE["green"],
+            ))
+            self._explain.addWidget(steps)
+
         if meta.guardrail_source and meta.guardrail_source.exists():
-            src_card = Card(f"Guardrail · purplemcp/guardrails/{meta.guardrail_source.name}")
+            src_card = Card(f"Guardrail source · purplemcp/guardrails/{meta.guardrail_source.name}")
             view = QPlainTextEdit()
             view.setReadOnly(True)
             view.setPlainText(meta.guardrail_source.read_text(encoding="utf-8"))
@@ -209,14 +245,26 @@ class DefenseLabPage(QWidget):
                 f"QPlainTextEdit {{ font-family: {MONO}; font-size: 11.5px; color: {PALETTE['text']};"
                 f" background: {PALETTE['bg']}; border: 1px solid {PALETTE['border']}; border-radius: 8px; }}"
             )
-            view.setMinimumHeight(300)
+            view.setMinimumHeight(280)
             self._highlighter = PythonHighlighter(view.document())
             src_card.body.addWidget(view)
-            self._detail.addWidget(src_card)
+            self._explain.addWidget(src_card)
 
-        # verify
-        verify_card = Card("Verify")
+        self._explain.addStretch(1)
+
+    # -- right: run it live ----------------------------------------------- #
+    def _build_live(self, meta: AttackMeta, case) -> None:
+        clear_layout(self._live)
+
+        head = QLabel("See it protect — live")
+        head.setStyleSheet(f"font-size: 15px; font-weight: 800; color: {PALETTE['text']};")
+        self._live.addWidget(head)
+
         if case:
+            verify_card = Card(
+                "1 · Verify",
+                "Replays the same payload at the vulnerable server and the hardened twin.",
+            )
             run_row = QHBoxLayout()
             self._verify_btn = button("Verify defense", "blue", "play", icon_color=PALETTE["blue"])
             self._verify_btn.setEnabled(self._lab.armed)
@@ -238,13 +286,25 @@ class DefenseLabPage(QWidget):
             cols.addWidget(self._red, 1)
             cols.addWidget(self._blue, 1)
             verify_card.body.addLayout(cols)
+            self._live.addWidget(verify_card)
         else:
-            verify_card.body.addWidget(muted(
-                "This one is best seen as a live exploit — open it in the Attack Lab. The guardrail "
-                "above is the fix.", faint=True,
+            note = Card("Verify")
+            note.body.addWidget(muted(
+                "This one is best seen as a live exploit — open it in the Attack Lab. The "
+                "guardrail source on the left is the fix; the terminal below scans it.",
+                faint=True,
             ))
-        self._detail.addWidget(verify_card)
-        self._detail.addStretch(1)
+            self._live.addWidget(note)
+
+        terminal = TerminalCard(
+            self._loop,
+            title="2 · Manual terminal",
+            subtitle="Copy a command into your own shell, or run it here. Output streams live.",
+            commands=defense_commands(meta, case),
+            lab=self._lab,
+        )
+        self._live.addWidget(terminal)
+        self._live.addStretch(1)
 
     # -- verify ----------------------------------------------------------- #
     def _verify(self) -> None:
@@ -276,6 +336,50 @@ class DefenseLabPage(QWidget):
         self._busy.stop()
         self._verify_btn.setEnabled(self._lab.armed)
         flash(self._verify_status, msg, PALETTE["red"], ms=6000)
+
+
+# --------------------------------------------------------------------------- #
+#  helpers
+# --------------------------------------------------------------------------- #
+def _scroll_host(placeholder: str) -> tuple[QWidget, QVBoxLayout]:
+    host = QWidget()
+    lay = QVBoxLayout(host)
+    lay.setContentsMargins(2, 0, 8, 0)
+    lay.setSpacing(14)
+    lay.addWidget(muted(placeholder))
+    lay.addStretch(1)
+    return host, lay
+
+
+def _fmt_args(args) -> str:
+    if not args:
+        return ""
+    text = json.dumps(args, ensure_ascii=False)
+    return text if len(text) <= 60 else text[:59] + "…"
+
+
+def _step_row(num: str, title: str, body: str, color: str) -> QWidget:
+    row = QWidget()
+    lay = QHBoxLayout(row)
+    lay.setContentsMargins(0, 2, 0, 2)
+    lay.setSpacing(11)
+    badge = QLabel(num)
+    badge.setFixedSize(26, 26)
+    badge.setAlignment(Qt.AlignCenter)
+    badge.setStyleSheet(
+        f"background: {rgba(color, 0.16)}; color: {color}; border: 1px solid {rgba(color, 0.4)};"
+        f" border-radius: 13px; font-weight: 800; font-family: {MONO};"
+    )
+    lay.addWidget(badge, alignment=Qt.AlignTop)
+    tbox = QVBoxLayout()
+    tbox.setSpacing(1)
+    t = QLabel(title)
+    t.setStyleSheet(f"font-weight: 700; color: {PALETTE['text']};")
+    tbox.addWidget(t)
+    b = muted(body, faint=True)
+    tbox.addWidget(b)
+    lay.addLayout(tbox, 1)
+    return row
 
 
 def _defense_row(meta: AttackMeta) -> QWidget:

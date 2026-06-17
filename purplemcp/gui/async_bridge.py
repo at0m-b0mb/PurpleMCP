@@ -85,7 +85,7 @@ def format_error(exc: BaseException) -> str:
     name = type(exc).__name__
     msg = str(exc)
     if "does not support tools" in msg:
-        return "That model can't use tools. Pick a tool-capable model (e.g. ollama pull llama3.1)."
+        return "That model can't use tools. Pick a tool-capable model (e.g. ollama pull qwen2.5)."
     if "ConnectError" in name or "ConnectionError" in name or "Connection error" in msg:
         return "Can't reach the model backend. Is it running?  For Ollama: `ollama serve`."
     if name == "ResponseError":

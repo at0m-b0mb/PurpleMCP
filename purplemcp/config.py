@@ -61,7 +61,10 @@ def load_providers() -> dict[str, ProviderConfig]:
     return {
         "ollama": ProviderConfig(
             name="ollama",
-            model=_env("OLLAMA_MODEL", "llama3.1"),
+            # qwen2.5 does Ollama's *structured* tool-calling reliably; llama3.1
+            # often just narrates a JSON blob instead of emitting a real tool call,
+            # which makes a tool-driven app look broken. Default to the one that works.
+            model=_env("OLLAMA_MODEL", "qwen2.5"),
             base_url=_env("OLLAMA_HOST", "http://localhost:11434"),
         ),
         "anthropic": ProviderConfig(

@@ -15,15 +15,25 @@ No key needed — just have Ollama running.
 
 ```bash
 ollama serve             # if not already running
-ollama pull llama3.1     # a TOOL-CAPABLE model (important!)
-purplemcp ask "19% of 4200?" -p ollama -m llama3.1 -s calculator
+ollama pull qwen2.5      # the recommended TOOL-CAPABLE default
+purplemcp ask "19% of 4200?" -p ollama -s calculator   # qwen2.5 is the default
 ```
 
 > [!IMPORTANT]
-> **Not every local model supports tool calling.** Code/FIM models like
-> `codestral` return `does not support tools (400)`. Use a tool-capable model:
-> `llama3.1`, `llama3.2`, `qwen2.5`, `mistral-nemo`, `firefunction-v2`, etc.
-> `.env` sets `OLLAMA_MODEL`; override per command with `-m`.
+> **Tool calling is not the same as chatting.** Every PurpleMCP feature (the
+> agent, the Chat Playground, the benchmark's model probe) needs a model that
+> emits *structured* tool calls. Two failure modes to know:
+> - **"does not support tools (400)"** — code/FIM models like `codestral` can't
+>   do it at all.
+> - **Looks like it's "thinking out loud"** — some chat models (notably
+>   `llama3.1`) reply with a JSON blob that *describes* a call instead of making
+>   one. The tools never actually run, so the app looks broken even though the
+>   model is responding.
+>
+> **Use `qwen2.5`** — it does Ollama's structured tool-calling reliably and is the
+> default `OLLAMA_MODEL`. Other solid picks: `qwen2.5:14b`, `mistral-nemo`,
+> `firefunction-v2`, `command-r`. `.env` sets `OLLAMA_MODEL`; override per command
+> with `-m`.
 
 ## Cloud (bring your own key)
 

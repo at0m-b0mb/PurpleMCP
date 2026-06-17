@@ -138,6 +138,13 @@ class ChatPage(QWidget):
         )
 
         root.addLayout(self._build_controls())
+        tip = muted(
+            "Tip: tick a server (e.g. calculator) and use a tool-capable model like qwen2.5, "
+            "then ask something that needs a tool — you'll see the tool calls stream as cards. "
+            "Chat-only models (e.g. llama3.1) often won't actually call tools.",
+            faint=True,
+        )
+        root.addWidget(tip)
         self._busy = BusyBar()
         root.addWidget(self._busy)
 
@@ -201,6 +208,9 @@ class ChatPage(QWidget):
             from PySide6.QtWidgets import QCheckBox
 
             cb = QCheckBox(name)
+            # tick a safe tool server by default so a first chat actually has tools
+            if name == "calculator":
+                cb.setChecked(True)
             bar.addWidget(cb)
             self._server_checks[name] = cb
 

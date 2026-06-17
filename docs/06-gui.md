@@ -79,20 +79,29 @@ agent works, every **tool call and its result stream in live** as inline cards.
 ![Chat Playground](images/gui/3_chat.png)
 
 ### Attack Lab  ·  *Red team*
-Browse all 17 modules grouped by family (MCP-specific vs classic appsec). Arm the
+Browse all 21 modules grouped by family (MCP-specific vs classic appsec). Arm the
 lab, pick an attack, and **Run exploit** — it runs the module's *real*
-`exploit.py` as a subprocess and streams its narrated output live, with the
-writeup rendered alongside.
+`exploit.py` as a subprocess and streams its output live (section **1 · Live
+exploit output**). Below it, a **2 · Manual terminal** lists the exact commands
+behind the demo — the `python …/exploit.py` and `purplemcp scan …` calls — each
+one **copyable** (paste into your own shell) *and* **runnable in place**. The
+module writeup is rendered alongside.
 
 ![Attack Lab](images/gui/5_attacks.png)
 
 ### Defense Lab  ·  *Blue team*
-The "how we fixed it" half. For each attack: a plain-English **mechanism**, the
-actual **guardrail source code** (syntax-highlighted), and **Verify** — which
-replays the same payload at the vulnerable server *and* its hardened twin, side by
-side, so you watch it get exploited (red) then blocked (blue). The verdict is
-computed honestly — an explicit attack-success "proof" string plus refusal
-phrases, not a black box.
+The "how we fixed it" half, split so you can **read it on the left and watch it
+protect on the right**.
+
+- **Left — explanation:** the threat, a plain-English **mechanism**, a numbered
+  *how it protects* step-by-step, and the actual **guardrail source code**
+  (syntax-highlighted).
+- **Right — run it live:** **1 · Verify** replays the same payload at the
+  vulnerable server *and* its hardened twin, side by side, so you watch it get
+  exploited (red) then blocked (blue); **2 · Manual terminal** gives you the
+  copy-and-run commands (`purplemcp scan …`, `python defense/compare.py <tool>`,
+  `purplemcp bench`). The verdict is computed honestly — an explicit
+  attack-success "proof" string plus refusal phrases, not a black box.
 
 ![Defense Lab](images/gui/6_defense.png)
 

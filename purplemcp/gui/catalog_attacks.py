@@ -1,6 +1,6 @@
 """Metadata for every attack module — drives the Attack Lab and Defense Lab.
 
-This is the single registry of the 17 modules: where each exploit/readme lives,
+This is the single registry of the 21 modules: where each exploit/readme lives,
 which guardrail file fixes it, and which Defense-Lab arena case (if any) gives the
 side-by-side proof. The runnable code stays in ``attacks/`` and
 ``purplemcp/guardrails/`` — this only points at it.

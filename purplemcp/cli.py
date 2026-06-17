@@ -120,7 +120,7 @@ def _friendly_error(exc: Exception) -> None:
     if "does not support tools" in msg:
         err.print(
             "[red]That model can't use tools.[/red] Pick a tool-capable model, e.g.:\n"
-            "  ollama pull llama3.1   (then add  -m llama3.1)"
+            "  ollama pull qwen2.5   (then add  -m qwen2.5)"
         )
     elif "ConnectError" in name or "ConnectionError" in name or "Connection error" in msg:
         err.print(

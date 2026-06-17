@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 360" width="1200" height="360" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0d0b16"/>
+      <stop offset="1" stop-color="#100e1c"/>
+    </linearGradient>
+    <linearGradient id="mark" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8b5cf6"/>
+      <stop offset="1" stop-color="#a855f7"/>
+    </linearGradient>
+    <linearGradient id="word" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ece9f7"/>
+      <stop offset="1" stop-color="#c084fc"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.18" cy="0.35" r="0.7">
+      <stop offset="0" stop-color="#a855f7" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#a855f7" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- backdrop -->
+  <rect width="1200" height="360" rx="20" fill="url(#bg)"/>
+  <rect width="1200" height="360" rx="20" fill="url(#glow)"/>
+  <rect x="1" y="1" width="1198" height="358" rx="19" fill="none" stroke="#2a2444" stroke-width="2"/>
+
+  <!-- MCP node-graph motif (right side) -->
+  <g stroke="#3b3463" stroke-width="2" fill="none" opacity="0.9">
+    <line x1="980" y1="90"  x2="1080" y2="150"/>
+    <line x1="980" y1="90"  x2="900"  y2="170"/>
+    <line x1="1080" y1="150" x2="1040" y2="260"/>
+    <line x1="900" y1="170" x2="1040" y2="260"/>
+    <line x1="900" y1="170" x2="980"  y2="90"/>
+    <line x1="1080" y1="150" x2="1130" y2="250"/>
+  </g>
+  <g>
+    <circle cx="980"  cy="90"  r="9" fill="#a855f7"/>
+    <circle cx="1080" cy="150" r="11" fill="#3b82f6"/>
+    <circle cx="900"  cy="170" r="8"  fill="#f43f5e"/>
+    <circle cx="1040" cy="260" r="10" fill="#c084fc"/>
+    <circle cx="1130" cy="250" r="7"  fill="#22d3ee"/>
+  </g>
+
+  <!-- logo mark -->
+  <g transform="translate(70,108)">
+    <rect width="132" height="132" rx="34" fill="url(#mark)"/>
+    <g transform="translate(30,28) scale(3.1)" fill="none" stroke="#ffffff" stroke-width="2"
+       stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 3l7 3v5c0 4.5-3 7.6-7 9-4-1.4-7-4.5-7-9V6z"/>
+      <path d="M9 12l2 2 4-4"/>
+    </g>
+  </g>
+
+  <!-- wordmark + taglines -->
+  <text x="232" y="150" font-size="74" font-weight="800" fill="url(#word)" letter-spacing="-1">PurpleMCP</text>
+  <text x="236" y="196" font-size="25" font-weight="700" fill="#c084fc" letter-spacing="3">BUILD IT · ATTACK IT · DEFEND IT</text>
+  <text x="236" y="232" font-size="19" fill="#a6a1c8">A purple-team security lab for the Model Context Protocol</text>
+
+  <!-- pillar pills -->
+  <g font-size="16" font-weight="700">
+    <g transform="translate(236,262)">
+      <rect width="150" height="40" rx="10" fill="#a855f7" fill-opacity="0.14" stroke="#a855f7" stroke-opacity="0.45"/>
+      <circle cx="26" cy="20" r="6" fill="#a855f7"/>
+      <text x="44" y="26" fill="#c084fc">BUILD</text>
+    </g>
+    <g transform="translate(398,262)">
+      <rect width="150" height="40" rx="10" fill="#f43f5e" fill-opacity="0.14" stroke="#f43f5e" stroke-opacity="0.45"/>
+      <circle cx="26" cy="20" r="6" fill="#f43f5e"/>
+      <text x="44" y="26" fill="#f43f5e">ATTACK</text>
+    </g>
+    <g transform="translate(560,262)">
+      <rect width="150" height="40" rx="10" fill="#3b82f6" fill-opacity="0.14" stroke="#3b82f6" stroke-opacity="0.45"/>
+      <circle cx="26" cy="20" r="6" fill="#3b82f6"/>
+      <text x="44" y="26" fill="#3b82f6">DEFEND</text>
+    </g>
+  </g>
+
+  <!-- stat chips -->
+  <g font-size="15" fill="#736d95">
+    <text x="740" y="312">21 attacks  ·  16 guardrails  ·  5 LLM providers  ·  CLI + desktop app</text>
+  </g>
+</svg>

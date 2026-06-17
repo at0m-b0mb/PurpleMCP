@@ -4,6 +4,31 @@ All notable changes to PurpleMCP. This project adheres loosely to
 [Semantic Versioning](https://semver.org/) and
 [Keep a Changelog](https://keepachangelog.com/).
 
+## [Unreleased]
+
+### Added
+- **Manual terminal** in the Attack Lab and Defense Lab — every exploit/defense now
+  surfaces the exact `purplemcp …` / `python …` commands behind it, each one
+  **copyable** (paste into your own shell) *and* **runnable in place**, with real
+  subprocess output streaming into a colourised console. Scoped to the project's
+  own commands (`purplemcp.gui.ops.RUNNER_ALLOW`).
+- **Defense Lab redesign** — a two-pane "read it, then watch it protect" layout:
+  the threat, the mechanism, a step-by-step, and the real guardrail source on the
+  left; a one-click **Verify** (exploited → blocked) and the manual terminal on the
+  right.
+- **Brand assets** — `docs/images/logo.svg` + `docs/images/banner.svg` (and rendered
+  PNGs), and a refreshed, screenshot-driven README.
+- `defense/compare.py` now accepts a case filter, e.g. `python defense/compare.py ping`.
+
+### Changed
+- **Default Ollama model is now `qwen2.5`** (was `llama3.1`). qwen2.5 does Ollama's
+  *structured* tool-calling reliably; llama3.1 frequently narrates a JSON "call"
+  instead of emitting a real one, which made the Chat Playground look broken even
+  though the model was responding. Docs, `.env.example`, and the model suggestions
+  updated to match.
+- Screenshots are regenerated with the labs and chat **driven live**, so they show
+  real exploit output, a real exploited→blocked verify, and real MCP tool calls.
+
 ## [0.5.0]
 
 ### Added

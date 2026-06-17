@@ -121,6 +121,72 @@ async def run_exploit(job: Job, exploit_path: str) -> int:
 
 
 # --------------------------------------------------------------------------- #
+#  manual command runner — the in-app "live terminal"
+# --------------------------------------------------------------------------- #
+#: Only the project's own commands may be launched from the in-app terminal.
+#: This keeps the manual runner a *teaching* tool, not an arbitrary shell.
+RUNNER_ALLOW = {"purplemcp", "python", "python3", "ollama"}
+
+
+def resolve_argv(argv: list[str]) -> list[str]:
+    """Map a friendly command (``purplemcp …`` / ``python …``) to a concrete argv.
+
+    The labs show copyable ``purplemcp …`` commands that also work verbatim in the
+    user's own terminal; in-app we route them through the very interpreter the GUI
+    is running under, so a missing PATH entry or the wrong venv can't make a
+    command that "should work" fail mysteriously.
+    """
+    if not argv:
+        return argv
+    head, *rest = argv
+    if head == "purplemcp":
+        return [sys.executable, "-m", "purplemcp.cli", *rest]
+    if head in ("python", "python3"):
+        return [sys.executable, *rest]
+    return argv
+
+
+async def run_command(job: Job, argv: list[str], *, lab: bool = False) -> int:
+    """Run an allowlisted project command as a subprocess, streaming its output.
+
+    Emits ``('line', str)`` events for the prompt echo, every output line, and a
+    final exit marker. ``lab=True`` injects the lab opt-in token — the caller is
+    responsible for only passing it once the user has armed the lab.
+    """
+    head = argv[0] if argv else ""
+    if head not in RUNNER_ALLOW:
+        job.event.emit(
+            "line",
+            f"refused: '{head}' is not allowed here — this terminal only runs "
+            "purplemcp / python / ollama commands.",
+        )
+        return 126
+
+    env = {**os.environ}
+    if lab:
+        env[LAB_ENV_VAR] = LAB_TOKEN
+    resolved = resolve_argv(argv)
+    job.event.emit("line", "$ " + " ".join(argv))
+    try:
+        proc = await asyncio.create_subprocess_exec(
+            *resolved,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.STDOUT,
+            env=env,
+            cwd=str(REPO_ROOT),
+        )
+    except FileNotFoundError as exc:
+        job.event.emit("line", f"ERROR: {exc}")
+        return 127
+    assert proc.stdout is not None
+    async for raw in proc.stdout:
+        job.event.emit("line", raw.decode("utf-8", "replace").rstrip("\n"))
+    rc = await proc.wait()
+    job.event.emit("line", f"[exit {rc}]")
+    return rc
+
+
+# --------------------------------------------------------------------------- #
 #  AI models — ollama management + provider key tests
 # --------------------------------------------------------------------------- #
 def _model_field(entry, *names):
