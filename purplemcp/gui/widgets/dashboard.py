@@ -82,10 +82,20 @@ class HeroCard(Card):
             "}"
         )
         add_shadow(self)
+
+        from .sidebar import LogoMark
+
+        row = QHBoxLayout()
+        row.setSpacing(18)
+        mark = LogoMark(64)
+        row.addWidget(mark, alignment=Qt.AlignTop)
+
+        col = QVBoxLayout()
+        col.setSpacing(7)
         tag = QLabel("Build it.  Attack it.  Defend it.")
-        tag.setStyleSheet(f"font-size: 22px; font-weight: 800; color: {PALETTE['text']};")
-        self.body.addWidget(tag)
-        self.body.addWidget(
+        tag.setStyleSheet(f"font-size: 24px; font-weight: 800; color: {PALETTE['text']}; letter-spacing: -0.2px;")
+        col.addWidget(tag)
+        col.addWidget(
             muted(
                 "A purple-team lab for the Model Context Protocol — connect models to MCP "
                 "servers, then break and harden them.",
@@ -100,7 +110,9 @@ class HeroCard(Card):
         ):
             pillars.addWidget(Badge(text, color))
         pillars.addStretch(1)
-        self.body.addLayout(pillars)
+        col.addLayout(pillars)
+        row.addLayout(col, 1)
+        self.body.addLayout(row)
 
 
 QUICK_ACTIONS = [

@@ -115,8 +115,9 @@ def stylesheet() -> str:
         background: transparent;
         color: {p['text_dim']};
         border: none;
+        border-left: 3px solid transparent;
         border-radius: 10px;
-        padding: 10px 12px;
+        padding: 10px 12px 10px 13px;
         text-align: left;
         font-size: 13px;
         font-weight: 600;
@@ -127,7 +128,8 @@ def stylesheet() -> str:
     }}
     QPushButton#NavButton:checked {{
         background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-            stop:0 rgba(168,85,247,0.22), stop:1 rgba(99,102,241,0.10));
+            stop:0 rgba(168,85,247,0.24), stop:1 rgba(99,102,241,0.06));
+        border-left: 3px solid {p['purple']};
         color: {p['text']};
     }}
     #NavGroupLabel {{
@@ -138,16 +140,17 @@ def stylesheet() -> str:
     }}
 
     /* ---- headings & text ---- */
-    #PageTitle   {{ font-size: 24px; font-weight: 800; color: {p['text']}; }}
+    #PageTitle   {{ font-size: 25px; font-weight: 800; color: {p['text']}; letter-spacing: -0.3px; }}
     #PageSub     {{ font-size: 13px; color: {p['text_dim']}; }}
-    #SectionTitle{{ font-size: 14px; font-weight: 700; color: {p['text']}; }}
+    #SectionTitle{{ font-size: 14px; font-weight: 700; color: {p['text']}; letter-spacing: 0.2px; }}
     #Muted       {{ color: {p['text_dim']}; }}
     #Faint       {{ color: {p['text_faint']}; font-size: 12px; }}
     .Mono, #Mono {{ font-family: {MONO}; }}
 
     /* ---- cards ---- */
     #Card {{
-        background: {p['surface']};
+        background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+            stop:0 {p['surface_hi']}, stop:1 {p['surface']});
         border: 1px solid {p['border']};
         border-radius: 14px;
     }}
@@ -156,7 +159,7 @@ def stylesheet() -> str:
         border: 1px solid {p['border']};
         border-radius: 12px;
     }}
-    #CardTitle {{ font-size: 13px; font-weight: 700; color: {p['text']}; }}
+    #CardTitle {{ font-size: 13px; font-weight: 700; color: {p['text']}; letter-spacing: 0.2px; }}
 
     /* ---- buttons ---- */
     QPushButton {{
@@ -168,6 +171,7 @@ def stylesheet() -> str:
         font-weight: 600;
     }}
     QPushButton:hover {{ background: {p['border']}; border-color: {p['violet']}; }}
+    QPushButton:pressed {{ background: {p['surface_2']}; }}
     QPushButton:disabled {{ color: {p['text_faint']}; border-color: {p['border']}; background: {p['surface_2']}; }}
 
     QPushButton[variant="primary"] {{
@@ -180,6 +184,10 @@ def stylesheet() -> str:
     QPushButton[variant="primary"]:hover {{
         background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
             stop:0 {p['indigo']}, stop:1 {p['purple_hi']});
+    }}
+    QPushButton[variant="primary"]:pressed {{
+        background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+            stop:0 {p['violet']}, stop:1 {p['violet']});
     }}
     QPushButton[variant="primary"]:disabled {{
         background: {p['surface_2']}; color: {p['text_faint']};

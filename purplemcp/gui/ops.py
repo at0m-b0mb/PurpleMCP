@@ -11,13 +11,15 @@ import asyncio
 import os
 import sys
 from dataclasses import dataclass
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 from ..config import REPO_ROOT, ProviderConfig, ServerSpec
 from ..host import MCPHost
 from ..host.client import ToolInfo
-from .async_bridge import Job
 from .catalog import LAB_ENV_VAR, LAB_TOKEN, ArenaCase
+
+if TYPE_CHECKING:  # ``Job`` is used only in annotations; importing async_bridge pulls
+    from .async_bridge import Job  # in PySide6, so keep it out of the runtime import path.
 
 
 # --------------------------------------------------------------------------- #

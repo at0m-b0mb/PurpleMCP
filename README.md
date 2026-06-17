@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/images/banner.png" alt="PurpleMCP — build it, attack it, defend it" width="880">
+<img src="docs/images/banner.png" alt="PurpleMCP — build it, attack it, defend it" width="100%">
 
 <br>
 
