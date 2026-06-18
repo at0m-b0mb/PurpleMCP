@@ -268,3 +268,33 @@ class TestMassAssignment:
     def test_blocks_privileged_fields(self):
         with pytest.raises(g.AuthorizationError):
             g.assert_assignable({"display_name": "x", "role": "admin"}, {"display_name"})
+
+
+class TestLimits:
+    def test_short_text_passes_through(self):
+        assert g.cap_text("hello", max_bytes=64) == "hello"
+        assert g.within_limit("hello", max_bytes=64)
+
+    def test_long_text_is_truncated_with_marker(self):
+        flood = "x" * 10_000 + "\nEOF-MARKER"
+        capped = g.cap_text(flood, max_bytes=1024)
+        assert len(capped.encode()) < 2000
+        assert "EOF-MARKER" not in capped          # the flood's tail never arrives
+        assert "truncated" in capped
+        assert not g.within_limit(flood, max_bytes=1024)
+
+
+class TestArgv:
+    def test_inserts_end_of_options_separator(self):
+        assert g.safe_argv(["grep", "-n", "pat"], ["alice --debug"]) == [
+            "grep", "-n", "pat", "--", "alice --debug",
+        ]
+
+    def test_user_value_is_kept_whole(self):
+        # a value that would be two flags stays a single argv element
+        out = g.safe_argv(["tool"], ["--output=/etc/x --verbose"])
+        assert out == ["tool", "--", "--output=/etc/x --verbose"]
+
+    def test_rejects_nul_bytes(self):
+        with pytest.raises(ValueError):
+            g.safe_argv(["tool"], ["a\x00b"])

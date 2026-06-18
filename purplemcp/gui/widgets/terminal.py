@@ -148,13 +148,15 @@ class TerminalCard(Card):
         self._lab = lab
         self._job = None
 
+        self._commands = list(commands or [])
+
         # a small "real terminal" cue in the header: traffic lights + live pill
         self.add_header_widget(_traffic_lights())
         self.add_header_widget(Badge("live", PALETTE["green"]))
 
         # suggested commands
-        if commands:
-            for label, command in commands:
+        if self._commands:
+            for label, command in self._commands:
                 self.body.addWidget(
                     _CommandRow(label, command, self._run, self._copy)
                 )
@@ -190,6 +192,11 @@ class TerminalCard(Card):
         self._run_btn = button("Run", "primary", "play")
         self._run_btn.clicked.connect(self._run_input)
         in_row.addWidget(self._run_btn)
+        if self._commands:
+            self._copy_all_btn = button("Copy all", "ghost")
+            self._copy_all_btn.setToolTip("Copy every command above to the clipboard")
+            self._copy_all_btn.clicked.connect(self._copy_all)
+            in_row.addWidget(self._copy_all_btn)
         self._clear_btn = button("Clear", "ghost")
         self._clear_btn.clicked.connect(self._console.clear)
         in_row.addWidget(self._clear_btn)
@@ -202,6 +209,11 @@ class TerminalCard(Card):
     def _copy(self, command: str) -> None:
         QGuiApplication.clipboard().setText(command)
         flash(self._status, "copied to clipboard", PALETTE["green"])
+
+    def _copy_all(self) -> None:
+        text = "\n".join(command for _label, command in self._commands)
+        QGuiApplication.clipboard().setText(text)
+        flash(self._status, f"copied {len(self._commands)} commands", PALETTE["green"])
 
     def _run_input(self) -> None:
         text = self._input.text().strip()

@@ -9,6 +9,7 @@ Each module documents the exact attack it neutralizes.
 """
 
 from .approval import ApprovalDenied, auto_allow, auto_deny, cli_confirm, require
+from .argv import safe_argv
 from .authz import (
     AuthorizationError,
     assert_assignable,
@@ -17,6 +18,7 @@ from .authz import (
     require_scope,
 )
 from .csvsafe import escape_formula, is_formula
+from .limits import cap_text, within_limit
 from .descriptions import (
     ToolPinner,
     find_injection,
@@ -102,6 +104,11 @@ __all__ = [
     # csvsafe (CSV / formula injection)
     "escape_formula",
     "is_formula",
+    # limits (unbounded output / context flooding)
+    "cap_text",
+    "within_limit",
+    # argv (argument / flag injection)
+    "safe_argv",
     # tokens (weak randomness)
     "new_token",
     "new_hex_token",

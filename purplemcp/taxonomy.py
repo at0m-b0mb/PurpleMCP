@@ -93,6 +93,10 @@ _REFS: dict[str, FrameworkRefs] = {
         "LLM06", "CWE-915", "Improperly Controlled Modification of Dynamically-Determined Object Attributes"),
     "csv-injection": FrameworkRefs(
         "LLM05", "CWE-1236", "Improper Neutralization of Formula Elements in a CSV File"),
+    "unbounded-output": FrameworkRefs(
+        "LLM10", "CWE-400", "Uncontrolled Resource Consumption"),
+    "argument-injection": FrameworkRefs(
+        "LLM05", "CWE-88", "Improper Neutralization of Argument Delimiters in a Command"),
 }
 
 

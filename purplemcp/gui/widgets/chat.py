@@ -145,6 +145,7 @@ class ChatPage(QWidget):
             faint=True,
         )
         root.addWidget(tip)
+        root.addWidget(self._build_suggestions())
         self._busy = BusyBar()
         root.addWidget(self._busy)
 
@@ -228,6 +229,35 @@ class ChatPage(QWidget):
         self._session_btn.clicked.connect(self._toggle_session)
         bar.addWidget(self._session_btn)
         return bar
+
+    # -- example prompts -------------------------------------------------- #
+    _EXAMPLES = [
+        "What is 19% of 4,200 plus the square root of 144?",
+        "Multiply 23 by 19, then add 7.",
+        "What is 2 to the power of 10?",
+    ]
+
+    def _build_suggestions(self) -> QWidget:
+        row = QWidget()
+        lay = QHBoxLayout(row)
+        lay.setContentsMargins(0, 0, 0, 0)
+        lay.setSpacing(8)
+        lay.addWidget(muted("Try:", faint=True))
+        for prompt in self._EXAMPLES:
+            chip = button(prompt, "ghost")
+            chip.setToolTip("Start a session, then click to ask — watch the calculator tools fire")
+            chip.clicked.connect(lambda _=False, p=prompt: self._use_suggestion(p))
+            lay.addWidget(chip)
+        lay.addStretch(1)
+        return row
+
+    def _use_suggestion(self, text: str) -> None:
+        self._input.setText(text)
+        if self._session is not None and self._input.isEnabled():
+            self._send()
+        else:
+            self._input.setFocus()
+            flash(self._status, "start a session, then Send", PALETTE["amber"], ms=3000)
 
     # -- session ---------------------------------------------------------- #
     def _selected_specs(self):

@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-06-05T15:54:12+00:00",
+  "generated_at": "2026-06-18T14:20:34+00:00",
   "tool_version": "0.5.0",
   "environment": {
     "python": "3.13.12",
     "platform": "macOS-26.6-arm64-arm-64bit-Mach-O"
   },
   "metrics": {
-    "cases": 15,
-    "exploited_on_vulnerable": 15,
-    "blocked_on_hardened": 15,
+    "cases": 17,
+    "exploited_on_vulnerable": 17,
+    "blocked_on_hardened": 17,
     "guardrail_effectiveness_pct": 100.0
   },
   "cases": [
@@ -23,7 +23,7 @@
       "blocked_hardened": true,
       "vulnerable_verdict": "EXPLOITED \u2014 data leaked",
       "hardened_verdict": "BLOCKED",
-      "vulnerable_excerpt": "PING 127.0.0.1 (127.0.0.1): 56 data bytes 64 bytes from 127.0.0.1: icmp_seq=0 ttl=64 time=0.069 ms --- 127.0.0.1 ping statistics --- 1 packets transmitted, 1 packets received, 0.0% packet loss round-\u2026",
+      "vulnerable_excerpt": "PING 127.0.0.1 (127.0.0.1): 56 data bytes 64 bytes from 127.0.0.1: icmp_seq=0 ttl=64 time=0.070 ms --- 127.0.0.1 ping statistics --- 1 packets transmitted, 1 packets received, 0.0% packet loss round-\u2026",
       "hardened_excerpt": "[exit 68] ping: cannot resolve 127.0.0.1; echo PWNED-$((6*7)): Unknown host"
     },
     {
@@ -149,7 +149,7 @@
       "blocked_hardened": true,
       "vulnerable_verdict": "EXPOSED \u2014 no guardrail",
       "hardened_verdict": "BLOCKED",
-      "vulnerable_excerpt": "wrote 18 bytes to /Users/b0mba_at0mica/Documents/at0m_b0mb/PurpleMCP/sandbox/lab/15_ESCAPED_PROOF.txt",
+      "vulnerable_excerpt": "wrote 18 bytes to /Users/b0mba_at0mica/Documents/at0m_b0mb/Project/PurpleMCP/sandbox/lab/15_ESCAPED_PROOF.txt",
       "hardened_excerpt": "refused: path escapes sandbox root: '../15_ESCAPED_PROOF.txt'"
     },
     {
@@ -191,7 +191,7 @@
       "blocked_hardened": true,
       "vulnerable_verdict": "EXPOSED \u2014 no guardrail",
       "hardened_verdict": "BLOCKED",
-      "vulnerable_excerpt": "unpacked: /Users/b0mba_at0mica/Documents/at0m_b0mb/PurpleMCP/sandbox/lab/19_ZIPSLIP_PROOF.txt",
+      "vulnerable_excerpt": "unpacked: /Users/b0mba_at0mica/Documents/at0m_b0mb/Project/PurpleMCP/sandbox/lab/19_ZIPSLIP_PROOF.txt",
       "hardened_excerpt": "refused: archive entry '../19_ZIPSLIP_PROOF.txt' escapes the unpack dir (path escapes sandbox root: '../19_ZIPSLIP_PROOF.txt')"
     },
     {
@@ -221,6 +221,34 @@
       "hardened_verdict": "BLOCKED",
       "vulnerable_excerpt": "name,note Alice,=DANGER_FORMULA(2+3)",
       "hardened_excerpt": "name,note Alice,'=DANGER_FORMULA(2+3)"
+    },
+    {
+      "num": "22",
+      "id": "unbounded-output",
+      "title": "Unbounded Output / Context Flooding",
+      "owasp_llm": "LLM10:2025 Unbounded Consumption",
+      "cwe": "CWE-400",
+      "guardrail": "guardrails.cap_text \u2014 truncate every result to a fixed byte budget",
+      "exploited_vulnerable": true,
+      "blocked_hardened": true,
+      "vulnerable_verdict": "EXPLOITED \u2014 data leaked",
+      "hardened_verdict": "BLOCKED",
+      "vulnerable_excerpt": "log line 0: request handled (200 OK) log line 1: request handled (200 OK) log line 2: request handled (200 OK) log line 3: request handled (200 OK) log line 4: request handled (200 OK) log line 5: re\u2026",
+      "hardened_excerpt": "log line 0: request handled (200 OK) log line 1: request handled (200 OK) log line 2: request handled (200 OK) log line 3: request handled (200 OK) log line 4: request handled (200 OK) log line 5: re\u2026"
+    },
+    {
+      "num": "23",
+      "id": "argument-injection",
+      "title": "Argument / Flag Injection",
+      "owasp_llm": "LLM05:2025 Improper Output Handling",
+      "cwe": "CWE-88",
+      "guardrail": "guardrails.safe_argv \u2014 pass values whole + a `--` end-of-options guard",
+      "exploited_vulnerable": true,
+      "blocked_hardened": true,
+      "vulnerable_verdict": "EXPLOITED \u2014 data leaked",
+      "hardened_verdict": "BLOCKED",
+      "vulnerable_excerpt": "internal_api_key=ARGINJ-SECRET-5521 user record: alice",
+      "hardened_excerpt": "user record: alice --debug"
     }
   ],
   "model_eval": null

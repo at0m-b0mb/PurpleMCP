@@ -79,7 +79,7 @@ agent works, every **tool call and its result stream in live** as inline cards.
 ![Chat Playground](images/gui/3_chat.png)
 
 ### Attack Lab  ·  *Red team*
-Browse all 21 modules grouped by family (MCP-specific vs classic appsec). Arm the
+Browse all 23 modules grouped by family (MCP-specific vs classic appsec). Arm the
 lab, pick an attack, and **Run exploit** — it runs the module's *real*
 `exploit.py` as a subprocess and streams its output live (section **1 · Live
 exploit output**). Below it, a **2 · Manual terminal** lists the exact commands

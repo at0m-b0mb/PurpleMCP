@@ -323,6 +323,38 @@ CASES: list[ArenaCase] = [
                 "The hardened twin prefixes a quote so the cell is text and the ',=' formula start "
                 "disappears.",
     ),
+    ArenaCase(
+        id="unbounded-output",
+        num="22",
+        title="Unbounded Output / Context Flooding",
+        threat="A log tool returns however much output the caller asks for — a context flood.",
+        tool="dump_logs",
+        benign_args={"lines": 10},
+        attack_args={"lines": 50000},
+        proof="EOF-LOG-MARKER-7731",
+        vuln_path=ATTACKS / "22_unbounded_output" / "vulnerable_server.py",
+        hardened_path=HARDENED / "safe_logreader.py",
+        guardrail="guardrails.cap_text — truncate every result to a fixed byte budget",
+        explain="dump_logs(lines=50000) returns ~2 MB on the vulnerable server, flooding the context "
+                "and ending in an EOF marker. The hardened twin wraps the result in cap_text, capping "
+                "it to 2 KB — so the marker (and the flood) never arrive.",
+    ),
+    ArenaCase(
+        id="argument-injection",
+        num="23",
+        title="Argument / Flag Injection",
+        threat="A lookup tool splits the caller's value into argv, so part of it becomes an option.",
+        tool="lookup",
+        benign_args={"user": "alice"},
+        attack_args={"user": "alice --debug"},
+        proof="ARGINJ-SECRET-5521",
+        vuln_path=ATTACKS / "23_argument_injection" / "vulnerable_server.py",
+        hardened_path=HARDENED / "safe_runner.py",
+        guardrail="guardrails.safe_argv — pass values whole + a `--` end-of-options guard",
+        explain="Splitting 'alice --debug' makes --debug a separate argv element, read as an option that "
+                "dumps internal_api_key. The hardened twin passes the value whole after a `--`, so it's "
+                "one operand and the secret stays hidden.",
+    ),
 ]
 
 CASES_BY_ID = {c.id: c for c in CASES}

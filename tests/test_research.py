@@ -14,7 +14,7 @@ from purplemcp.gui.catalog_attacks import ATTACKS
 
 class TestTaxonomy:
     def test_covers_every_module(self):
-        assert len(tax.TAXONOMY) == len(ATTACKS) == 21
+        assert len(tax.TAXONOMY) == len(ATTACKS) == 23
         for meta in ATTACKS:
             assert meta.id in tax.BY_ID
 
@@ -25,7 +25,7 @@ class TestTaxonomy:
 
     def test_rows_are_serializable(self):
         rows = tax.as_rows()
-        assert len(rows) == 21
+        assert len(rows) == 23
         assert all({"num", "title", "owasp_llm", "cwe", "guardrail"} <= r.keys() for r in rows)
 
 
@@ -66,3 +66,9 @@ class TestBenchmark:
         report = asyncio.run(run_guardrail_benchmark(cases=subset))
         assert report.n_cases == 3
         assert report.n_correct == 3, [c.id for c in report.cases if not c.correct]
+
+    def test_new_modules_22_23_blocked_by_hardened_twins(self):
+        subset = [CASES_BY_ID[i] for i in ("unbounded-output", "argument-injection")]
+        report = asyncio.run(run_guardrail_benchmark(cases=subset))
+        assert report.n_cases == 2
+        assert report.n_correct == 2, [c.id for c in report.cases if not c.correct]

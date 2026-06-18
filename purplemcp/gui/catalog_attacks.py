@@ -1,6 +1,6 @@
 """Metadata for every attack module — drives the Attack Lab and Defense Lab.
 
-This is the single registry of the 21 modules: where each exploit/readme lives,
+This is the single registry of the 23 modules: where each exploit/readme lives,
 which guardrail file fixes it, and which Defense-Lab arena case (if any) gives the
 side-by-side proof. The runnable code stays in ``attacks/`` and
 ``purplemcp/guardrails/`` — this only points at it.
@@ -109,6 +109,12 @@ ATTACKS: list[AttackMeta] = [
     AttackMeta("21", "csv-injection", "CSV / Formula Injection", FAMILY_CLASSIC, "MEDIUM",
                "An exported cell starting with '=' runs as a spreadsheet formula.",
                "21_csv_injection", "csvsafe.py", "csv-injection"),
+    AttackMeta("22", "unbounded-output", "Unbounded Output / Context Flooding", FAMILY_CLASSIC, "MEDIUM",
+               "A tool returns unbounded output, flooding the model's context.",
+               "22_unbounded_output", "limits.py", "unbounded-output"),
+    AttackMeta("23", "argument-injection", "Argument / Flag Injection", FAMILY_CLASSIC, "HIGH",
+               "A caller's value becomes a command-line option, not data.",
+               "23_argument_injection", "argv.py", "argument-injection"),
 ]
 
 ATTACKS_BY_ID = {a.id: a for a in ATTACKS}

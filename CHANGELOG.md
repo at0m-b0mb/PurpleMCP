@@ -7,6 +7,18 @@ All notable changes to PurpleMCP. This project adheres loosely to
 ## [Unreleased]
 
 ### Added
+- **Two new attack/defense modules → 23 total:** **22 Unbounded Output / Context
+  Flooding** (OWASP LLM10, CWE-400 — guarded by `guardrails.cap_text`) and **23
+  Argument / Flag Injection** (CWE-88 — guarded by `guardrails.safe_argv`). Both ship
+  the full triple (vulnerable server + exploit + writeup), a hardened twin, an arena
+  case, taxonomy mapping, and tests. OWASP-LLM coverage rises to **6/10** (LLM10 is
+  now exercised). Benchmark: **17/17** blocked.
+- **Chat Playground example prompts** — one-click suggestion chips that ask a
+  tool-using question so first-time users immediately see tool calls fire.
+- **Manual terminal "Copy all"** — copy every command behind a lab in one click; a
+  traffic-light + LIVE header makes it read as a real terminal.
+- **GitHub-sized banner** — redesigned at the recommended **1280×640** social-preview
+  resolution (rendered 2×), with BUILD/ATTACK/DEFEND pillar cards.
 - **Manual terminal** in the Attack Lab and Defense Lab — every exploit/defense now
   surfaces the exact `purplemcp …` / `python …` commands behind it, each one
   **copyable** (paste into your own shell) *and* **runnable in place**, with real

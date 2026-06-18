@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/images/banner.png" alt="PurpleMCP — build it, attack it, defend it" width="100%">
+<img src="docs/images/banner.png" alt="PurpleMCP — build it, attack it, defend it" width="820">
 
 <br>
 
@@ -8,12 +8,12 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-a855f7?style=flat-square)](LICENSE)
 [![Version](https://img.shields.io/badge/version-0.5.0-8b5cf6?style=flat-square)](CHANGELOG.md)
 ![Python](https://img.shields.io/badge/Python-3.11%2B-8b5cf6?style=flat-square&logo=python&logoColor=white)
-![Attack modules](https://img.shields.io/badge/attack%20modules-21-f43f5e?style=flat-square)
-![Guardrails](https://img.shields.io/badge/guardrails-16-3b82f6?style=flat-square)
-![OWASP LLM Top 10](https://img.shields.io/badge/OWASP%20LLM%20Top%2010-mapped-c084fc?style=flat-square)
+![Attack modules](https://img.shields.io/badge/attack%20modules-23-f43f5e?style=flat-square)
+![Guardrails](https://img.shields.io/badge/guardrails-18-3b82f6?style=flat-square)
+![OWASP LLM Top 10](https://img.shields.io/badge/OWASP%20LLM%20Top%2010-6%2F10%20mapped-c084fc?style=flat-square)
 
 **Connect any LLM — local [Ollama](https://ollama.com) or cloud Claude / GPT / Gemini — to MCP servers,
-break them with 21 real, runnable exploits, then harden them with a reusable guardrails library.**
+break them with 23 real, runnable exploits, then harden them with a reusable guardrails library.**
 All from a polished desktop console *or* the CLI.
 
 </div>
@@ -27,7 +27,7 @@ blue team together):
 | Pillar | What it gives you |
 | --- | --- |
 | 🏗️ **Build & Connect** | A multi-provider host that connects **local models (Ollama)** *and* **cloud models (Claude, GPT, Gemini, OpenRouter)** to MCP servers — plus clean example servers and a one-command installer. |
-| 🔴 **Attack** *(lab only)* | Intentionally-vulnerable MCP servers + working exploits for the major MCP threat classes, so you can *see* how the protocol gets abused. |
+| 🔴 **Attack** *(lab only)* | Intentionally-vulnerable MCP servers + working exploits for **23** MCP threat classes, so you can *see* how the protocol gets abused. |
 | 🔵 **Defend** | A reusable hardening library, hardened twins of every vulnerable server, a static **security scanner**, and a **Defense Lab that runs the defense for real** — explanation on one side, live protection on the other. |
 
 > [!WARNING]
@@ -37,7 +37,7 @@ blue team together):
 
 > [!TIP]
 > **New to MCP security? Start here →** **[The MCP Security Handbook](docs/MCP-SECURITY-GUIDE.md)** —
-> a complete, in-depth guide to the protocol, the 21 attack classes, and the 16 guardrails that stop
+> a complete, in-depth guide to the protocol, the 23 attack classes, and the 18 guardrails that stop
 > them. (Also readable in-app via the **Learn** page.)
 
 ---
@@ -177,7 +177,7 @@ the CLI uses — no separate server, no browser. It organizes all of PurpleMCP i
 | Connect | **MCP Servers** | View the registry, **add your own servers**, one-click add from a **catalog of real published servers**, and install into Claude Desktop. |
 | Connect | **Tool Explorer** | Browse a server's tools, inspect each JSON schema, and call any tool through an auto-generated form — no model required. |
 | Connect | **Chat Playground** | Chat with any provider/model and watch the agent's **tool calls + results stream live** as inline cards. |
-| Red team | **Attack Lab** | Browse all 21 attacks, **run the real exploit** with live output, and copy/run the commands from a built-in **manual terminal** (lab-gated). |
+| Red team | **Attack Lab** | Browse all 23 attacks, **run the real exploit** with live output, and copy/run the commands from a built-in **manual terminal** (lab-gated). |
 | Blue team | **Defense Lab** | **Explanation on the left, the defense running on the right**: the guardrail mechanism + source, a **Verify** that replays the payload (exploited → blocked), and a live **manual terminal**. |
 | Blue team | **Security Scanner** | Run the static + dynamic scanner with a severity chart, summary pills, and per-finding cards. |
 | Research | **Research** | Threat taxonomy (OWASP/CWE/ATLAS) + one-click benchmark with the defense matrix and JSON/MD export. |
@@ -264,7 +264,7 @@ See [docs/03-installing-models.md](docs/03-installing-models.md).
 
 ## 🔴 Pillar 2 — Attack *(lab only)*
 
-Twenty-one self-contained modules, each a **vulnerable server + an exploit + a writeup**:
+Twenty-three self-contained modules, each a **vulnerable server + an exploit + a writeup**:
 
 | # | Attack | What the attacker achieves |
 | --- | --- | --- |
@@ -289,6 +289,8 @@ Twenty-one self-contained modules, each a **vulnerable server + an exploit + a w
 | 19 | **Zip slip** | An archive member named `../x` writes outside the extract dir |
 | 20 | **Mass assignment** | An update tool binds any field the caller sends — including `role` |
 | 21 | **CSV / formula injection** | An exported cell starting with `=` runs as a spreadsheet formula |
+| 22 | **Unbounded output / context flooding** | One tool call returns megabytes, flooding the model's context (DoS + cost) |
+| 23 | **Argument / flag injection** | A caller's value becomes a command-line *option*, not data (no shell needed) |
 
 Full catalog with mechanics: [docs/04-attack-catalog.md](docs/04-attack-catalog.md). Each lives in
 [`attacks/NN_*/`](attacks/) and is gated by the safety switch.
@@ -319,6 +321,8 @@ in [`purplemcp/guardrails/`](purplemcp/guardrails/):
 | Zip slip | `guardrails.paths.safe_resolve()` — confine every archive member |
 | Mass assignment | `guardrails.authz.assert_assignable()` — editable-field allowlist |
 | CSV / formula injection | `guardrails.csvsafe.escape_formula()` — force formula cells to text |
+| Unbounded output / flooding | `guardrails.limits.cap_text()` — hard byte ceiling on every tool result |
+| Argument / flag injection | `guardrails.argv.safe_argv()` — pass values whole + a `--` end-of-options guard |
 
 Prove it yourself, side by side — exploited on the left, blocked on the right:
 
@@ -350,7 +354,7 @@ PurpleMCP is built to be a reproducible research artifact, not just a demo:
 - **PurpleMCP-Bench** — `purplemcp bench` measures **guardrail effectiveness** (deterministic: attack vs
   vulnerable vs hardened twin) and, optionally, **model susceptibility** (`--provider`), writing JSON +
   Markdown to `results/`. A committed reference run is in
-  [`results/guardrail-benchmark.md`](results/guardrail-benchmark.md) (15/15 cases fixed by the hardened
+  [`results/guardrail-benchmark.md`](results/guardrail-benchmark.md) (17/17 cases fixed by the hardened
   twins).
 - **SARIF output** — `purplemcp scan <path> --format sarif` emits SARIF 2.1.0 for GitHub code scanning /
   any SAST UI.

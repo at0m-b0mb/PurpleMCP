@@ -52,11 +52,13 @@ citable. The mapping is defined in [`purplemcp/taxonomy.py`](../purplemcp/taxono
 | 19 | Zip Slip / Archive Traversal | AppSec | LLM05:2025 Improper Output Handling | CWE-22 | — | `paths.py` |
 | 20 | Mass Assignment / Priv-Esc | AppSec | LLM06:2025 Excessive Agency | CWE-915 | — | `authz.py` |
 | 21 | CSV / Formula Injection | AppSec | LLM05:2025 Improper Output Handling | CWE-1236 | — | `csvsafe.py` |
+| 22 | Unbounded Output / Context Flooding | AppSec | LLM10:2025 Unbounded Consumption | CWE-400 | — | `limits.py` |
+| 23 | Argument / Flag Injection | AppSec | LLM05:2025 Improper Output Handling | CWE-88 | — | `argv.py` |
 
-**OWASP-LLM coverage:** the 21 modules exercise 5 of the 10 categories — LLM01,
-LLM02, LLM03, LLM05, LLM06. LLM04 (data/model poisoning), LLM07 (system-prompt
-leakage), LLM08 (vector/embedding), LLM09 (misinformation) and LLM10 (unbounded
-consumption) are **out of scope** today and noted under *Limitations*.
+**OWASP-LLM coverage:** the 23 modules exercise 6 of the 10 categories — LLM01,
+LLM02, LLM03, LLM05, LLM06, LLM10. LLM04 (data/model poisoning), LLM07 (system-prompt
+leakage), LLM08 (vector/embedding) and LLM09 (misinformation) are **out of scope**
+today and noted under *Limitations*.
 
 ## 3. Experiment design
 

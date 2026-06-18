@@ -1,8 +1,8 @@
 # PurpleMCP-Bench — guardrail effectiveness
 
-- generated: `2026-06-05T15:54:12+00:00`
+- generated: `2026-06-18T14:20:34+00:00`
 - purplemcp: `0.5.0` · python `3.13.12` · macOS-26.6-arm64-arm-64bit-Mach-O
-- **guardrail effectiveness: 15/15 (100.0%)** — exploitable on the vulnerable server, blocked on the twin
+- **guardrail effectiveness: 17/17 (100.0%)** — exploitable on the vulnerable server, blocked on the twin
 
 | # | Attack | OWASP-LLM | CWE | Vulnerable | Hardened | Fixed |
 | --- | --- | --- | --- | --- | --- | :---: |
@@ -21,3 +21,5 @@
 | 19 | Zip Slip / Archive Traversal | LLM05:2025 Improper Output Handling | CWE-22 | EXPOSED — no guardrail | BLOCKED | ✅ |
 | 20 | Mass Assignment / Privilege Escalation | LLM06:2025 Excessive Agency | CWE-915 | EXPLOITED — data leaked | BLOCKED | ✅ |
 | 21 | CSV / Formula Injection | LLM05:2025 Improper Output Handling | CWE-1236 | EXPLOITED — data leaked | BLOCKED | ✅ |
+| 22 | Unbounded Output / Context Flooding | LLM10:2025 Unbounded Consumption | CWE-400 | EXPLOITED — data leaked | BLOCKED | ✅ |
+| 23 | Argument / Flag Injection | LLM05:2025 Improper Output Handling | CWE-88 | EXPLOITED — data leaked | BLOCKED | ✅ |

@@ -1,6 +1,6 @@
 # PurpleMCP — threat taxonomy
 
-All **21** attack/defense modules mapped to the **OWASP Top 10 for LLM Applications (2025)**, **CWE**, and **MITRE ATLAS**. This file is generated from [`purplemcp/taxonomy.py`](../purplemcp/taxonomy.py) — run `python scripts/gen_taxonomy.py` to refresh, or `purplemcp taxonomy` to print it.
+All **23** attack/defense modules mapped to the **OWASP Top 10 for LLM Applications (2025)**, **CWE**, and **MITRE ATLAS**. This file is generated from [`purplemcp/taxonomy.py`](../purplemcp/taxonomy.py) — run `python scripts/gen_taxonomy.py` to refresh, or `purplemcp taxonomy` to print it.
 
 | # | Threat | Family | Sev | OWASP LLM (2025) | CWE | MITRE ATLAS | Guardrail |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -25,16 +25,18 @@ All **21** attack/defense modules mapped to the **OWASP Top 10 for LLM Applicati
 | 19 | Zip Slip / Archive Traversal | Classic appsec, now model-reachable | HIGH | LLM05:2025 Improper Output Handling | CWE-22 | — | `paths.py` |
 | 20 | Mass Assignment / Priv-Esc | Classic appsec, now model-reachable | HIGH | LLM06:2025 Excessive Agency | CWE-915 | — | `authz.py` |
 | 21 | CSV / Formula Injection | Classic appsec, now model-reachable | MEDIUM | LLM05:2025 Improper Output Handling | CWE-1236 | — | `csvsafe.py` |
+| 22 | Unbounded Output / Context Flooding | Classic appsec, now model-reachable | MEDIUM | LLM10:2025 Unbounded Consumption | CWE-400 | — | `limits.py` |
+| 23 | Argument / Flag Injection | Classic appsec, now model-reachable | HIGH | LLM05:2025 Improper Output Handling | CWE-88 | — | `argv.py` |
 
-## OWASP LLM Top 10 coverage — 5/10 categories
+## OWASP LLM Top 10 coverage — 6/10 categories
 
 - ✅ **LLM01:2025 Prompt Injection** (2) — tool-poisoning, indirect-injection
 - ✅ **LLM02:2025 Sensitive Information Disclosure** (2) — token-theft, data-exfiltration
 - ✅ **LLM03:2025 Supply Chain** (2) — rug-pull, tool-shadowing
 - ⬜ **LLM04:2025 Data and Model Poisoning** (0) — _(not yet demonstrated)_
-- ✅ **LLM05:2025 Improper Output Handling** (10) — output-injection, command-injection, path-traversal, sql-injection, template-injection, insecure-deserialization, unrestricted-file-write, eval-injection, zip-slip, csv-injection
+- ✅ **LLM05:2025 Improper Output Handling** (11) — output-injection, command-injection, path-traversal, sql-injection, template-injection, insecure-deserialization, unrestricted-file-write, eval-injection, zip-slip, csv-injection, argument-injection
 - ✅ **LLM06:2025 Excessive Agency** (5) — ssrf, excessive-permissions, broken-access-control, weak-randomness, mass-assignment
 - ⬜ **LLM07:2025 System Prompt Leakage** (0) — _(not yet demonstrated)_
 - ⬜ **LLM08:2025 Vector and Embedding Weaknesses** (0) — _(not yet demonstrated)_
 - ⬜ **LLM09:2025 Misinformation** (0) — _(not yet demonstrated)_
-- ⬜ **LLM10:2025 Unbounded Consumption** (0) — _(not yet demonstrated)_
+- ✅ **LLM10:2025 Unbounded Consumption** (1) — unbounded-output

@@ -168,20 +168,21 @@ can do (least privilege, allowlists), and bind every action to the real caller
 
 PurpleMCP maps every module to **OWASP Top 10 for LLM Applications (2025)**,
 **CWE**, and **MITRE ATLAS** (see [`purplemcp/taxonomy.py`](../purplemcp/taxonomy.py)
-and [TAXONOMY.md](TAXONOMY.md)). The lab currently demonstrates **5 of the 10**
-OWASP-LLM categories across its 21 modules:
+and [TAXONOMY.md](TAXONOMY.md)). The lab currently demonstrates **6 of the 10**
+OWASP-LLM categories across its 23 modules:
 
 | OWASP-LLM (2025) | Covered by |
 | --- | --- |
 | **LLM01 Prompt Injection** | Tool poisoning, Indirect injection |
 | **LLM02 Sensitive Information Disclosure** | Token theft, Data exfiltration |
 | **LLM03 Supply Chain** | Rug pull, Tool shadowing |
-| **LLM05 Improper Output Handling** | Command/SQL/Template/Eval injection, Path traversal, SSRF-sink, File write, Zip slip, CSV injection, Output injection, Deserialization |
+| **LLM05 Improper Output Handling** | Command/SQL/Template/Eval/Argument injection, Path traversal, SSRF-sink, File write, Zip slip, CSV injection, Output injection, Deserialization |
 | **LLM06 Excessive Agency** | SSRF, Excessive permissions, IDOR, Mass assignment, Weak randomness |
+| **LLM10 Unbounded Consumption** | Unbounded output / context flooding |
 
 > The remaining categories (LLM04 Data/Model Poisoning, LLM07 System-Prompt
-> Leakage, LLM08 Vector/Embedding, LLM09 Misinformation, LLM10 Unbounded
-> Consumption) are deliberate **future work** — see Part 8.
+> Leakage, LLM08 Vector/Embedding, LLM09 Misinformation) are deliberate
+> **future work** — see Part 8.
 
 ---
 
@@ -564,7 +565,7 @@ PurpleMCP is built to be a *reproducible research artifact*, not just a demo:
 - **Methodology** — the experimental design, metrics, limitations, and threat model
   are written up in [07-research-methodology.md](07-research-methodology.md).
 
-**Honest scope (a feature, not a gap).** The lab covers 5/10 OWASP-LLM categories
+**Honest scope (a feature, not a gap).** The lab covers 6/10 OWASP-LLM categories
 and emphasizes *deterministic* attacks (so results reproduce without API keys).
 Model-in-the-loop susceptibility (does *this* model fall for tool poisoning?) is
 inherently variable — that variance is itself a research finding, surfaced by the
@@ -603,6 +604,6 @@ or print it with `purplemcp taxonomy`).
 | **MCP-specific** | 01 Tool Poisoning · 02 Indirect Injection · 07 Rug Pull · 12 Tool Shadowing · 17 Output Injection |
 | **Classic appsec, model-reachable** | 03 Command Injection · 04 Path Traversal · 05 SSRF · 06 Token Theft · 08 Excessive Permissions · 09 Data Exfiltration · 10 SQL Injection · 11 Template Injection · 13 Insecure Deserialization · 14 IDOR · 15 File Write · 16 Weak Randomness · 18 Eval Injection · 19 Zip Slip · 20 Mass Assignment · 21 CSV Injection |
 
-**21 attack modules · 16 hardened twins · 16 guardrails · 5/10 OWASP-LLM categories.**
+**23 attack modules · 18 hardened twins · 18 guardrails · 6/10 OWASP-LLM categories.**
 
 *Happy hacking — and happy hardening.* 🟣
